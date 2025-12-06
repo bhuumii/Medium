@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  image     String?
+  bio       String?
+  posts     Post[]
+  claps     Clap[]
+  following Follow[] @relation("follower")
+  followers Follow[] @relation("following")
+  createdAt DateTime @default(now())
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  content   String
+  excerpt   String
+  published Boolean  @default(true)
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
+  tags      Tag[]    @relation("PostTags")
+  claps     Clap[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Tag {
+  id    String @id @default(cuid())
+  name  String @unique
+  posts Post[] @relation("PostTags")
+}
+
+model Clap {
+  id     String @id @default(cuid())
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+  post   Post   @relation(fields: [postId], references: [id])
+  postId String
+  count  Int    @default(1)
+}
+
+model Follow {
+  id          String @id @default(cuid())
+  follower    User   @relation("follower", fields: [followerId], references: [id])
+  followerId  String
+  following   User   @relation("following", fields: [followingId], references: [id])
+  followingId String
+  createdAt   DateTime @default(now())
+}
