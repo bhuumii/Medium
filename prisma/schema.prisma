@@ -22,11 +22,10 @@ model User {
   sessions      Session[]
   posts         Post[]
 
-    pronouns  String?   // optional
+  pronouns  String?   // optional
   shortBio  String?   // like Medium's "Short bio"
   about     String?   // long About-page content
 }
-
 
 model Account {
   id                String  @id @default(cuid())
@@ -69,9 +68,9 @@ model VerificationToken {
 model Post {
   id          String   @id @default(cuid())
   title       String
-  slug        String   @unique      // used in findUnique({ where: { slug } })
-  description String?  
-  excerpt     String?             // your "short description" field
+  slug        String   @unique
+  description String?
+  excerpt     String?
   content     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

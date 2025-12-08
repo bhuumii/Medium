@@ -8,12 +8,12 @@ import ProfilePageClient from "./ProfilePageClient";
 export default async function ProfileRoute() {
   const session = await getServerSession(authOptions);
 
-  if (!session?.user?.email) {
+  if (!session?.user?.id) {
     redirect("/login");
   }
 
   const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { id: session.user.id },
     select: {
       id: true,
       name: true,
