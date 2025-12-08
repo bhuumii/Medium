@@ -460,3 +460,90 @@ body {
   background: transparent;
   padding: 0;
 }
+
+/* Wrapper so the dropdown is positioned relative to the avatar */
+.avatar-menu-wrapper {
+  position: relative;
+}
+
+/* Your existing avatar button – keep if already styled similarly */
+.avatar-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #000;
+  background-color: #f24d0c;
+  color: #fff;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* The dropdown panel */
+.avatar-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 260px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 1000;
+}
+
+/* Top card: avatar + name */
+.avatar-menu-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.avatar-menu-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #f24d0c;
+  color: #fff;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-menu-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Options list */
+.avatar-menu-list {
+  padding: 4px 0 8px;
+}
+
+/* Common style for each menu option */
+.avatar-menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  text-decoration: none;       /* remove purple underline */
+  color: #111;
+}
+
+.avatar-menu-item:hover {
+  background-color: #f5f5f5;
+}
+
+/* Sign out – red text */
+.avatar-menu-signout {
+  color: #b3261e;
+}
