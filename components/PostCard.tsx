@@ -1,41 +1,62 @@
+// components/PostCard.tsx
+"use client"
 
-import Link from 'next/link'
+import Link from "next/link"
+import { formatDate } from "../lib/formatDate"
 
-export default function PostCard({ post }: { post: any }) {
+type PostCardProps = {
+  post: {
+    id: string
+    title: string
+    excerpt: string | null
+    slug: string
+    content?: string | null
+    createdAt: Date
+    author?: {
+      name: string | null
+    } | null
+  }
+}
+
+export default function PostCard({ post }: PostCardProps) {
+  const authorName = post.author?.name ?? "Unknown"
+  const date = formatDate(post.createdAt)
+  // Very rough read time – you can improve this later
+  const readTime = "1 min read"
+
   return (
-    <article className="border-b border-[#f2f2f2] pb-6">
-      <div className="text-xs text-[#6b6b6b] mb-2">
-        <Link
-          href={`/users/${post.authorId}`}
-          className="hover:underline font-medium text-[#242424]"
-        >
-          {post.author?.name ?? 'Unknown'}
-        </Link>{' '}
-        · {new Date(post.createdAt).toLocaleDateString()}
-      </div>
+    <article className="post-card">
+      <Link href={`/posts/${post.slug}`} className="post-card__inner">
+        {/* LEFT SIDE: text */}
+        <div className="post-card__text">
+          <div className="post-card__meta">
+            <span>{authorName}</span>
+            <span className="dot">·</span>
+            <span>{date}</span>
+            <span className="dot">·</span>
+            <span>{readTime}</span>
+          </div>
 
-    
-      <Link
-        href={`/posts/${encodeURIComponent(post.slug)}`}
-        className="block group"
-      >
-        <h2 className="text-xl font-semibold leading-snug group-hover:underline">
-          {post.title}
-        </h2>
-        {post.excerpt && (
-          <p className="mt-1 text-sm text-[#6b6b6b]">
-            {post.excerpt.length > 140
-              ? post.excerpt.slice(0, 140) + '…'
-              : post.excerpt}
-          </p>
-        )}
+          <h2 className="post-card__title">{post.title}</h2>
+
+          {post.excerpt && (
+            <p className="post-card__excerpt">{post.excerpt}</p>
+          )}
+
+          <div className="post-card__footer">
+            <button
+              type="button"
+              className="post-card__save"
+              onClick={(e) => e.preventDefault()} // don't navigate when clicking Save
+            >
+              Save
+            </button>
+          </div>
+        </div>
+
+        {/* RIGHT SIDE: thumbnail placeholder (like Medium’s image) */}
+        <div className="post-card__thumb" />
       </Link>
-
-      <div className="mt-3 flex items-center gap-3 text-xs text-[#6b6b6b]">
-        <span>{Math.max(1, Math.round(post.content.length / 800))} min read</span>
-        <span>·</span>
-        <button className="hover:text-black">Save</button>
-      </div>
     </article>
   )
 }

@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,3 +5,458 @@
 body { background: #fff; color: #0f172a; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
 .btn { background: #0f172a; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; }
 .prose img { max-width: 100%; }
+
+/* ---------- Feed layout (Medium-like) ---------- */
+
+.home-layout {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+/* Tabs ("For you" / "Featured") */
+
+.feed-header {
+  margin-bottom: 24px;
+}
+
+.feed-tabs {
+  display: flex;
+  gap: 24px;
+  font-size: 14px;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.feed-tab {
+  padding: 10px 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #757575;
+}
+
+.feed-tab--active {
+  color: #191919;
+  font-weight: 600;
+  border-bottom: 2px solid #191919;
+  margin-bottom: -1px; /* sit nicely on the border line */
+}
+
+.feed-list {
+  margin-top: 16px;
+}
+
+/* ---------- Post card (each story row) ---------- */
+
+.post-card {
+  border-bottom: 1px solid #f2f2f2;
+  padding: 20px 0;
+}
+
+.post-card__inner {
+  display: flex;
+  gap: 24px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.post-card__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.post-card__meta {
+  font-size: 13px;
+  color: #757575;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.post-card__meta .dot {
+  font-size: 16px;
+  line-height: 0;
+}
+
+.post-card__title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 4px;
+  line-height: 1.25;
+}
+
+.post-card__excerpt {
+  font-size: 14px;
+  color: #555555;
+  margin: 0 0 8px;
+  max-height: 3.2em; /* ~2 lines */
+  overflow: hidden;
+}
+
+.post-card__footer {
+  margin-top: 4px;
+}
+
+.post-card__save {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #d3d3d3;
+  background: white;
+  cursor: pointer;
+}
+
+.post-card__save:hover {
+  border-color: #191919;
+}
+
+/* Right-side image area */
+
+.post-card__thumb {
+  width: 160px;
+  height: 110px;
+  border-radius: 6px;
+  background: #f2f2f2;
+  flex-shrink: 0;
+}
+
+/* Small screens: stack vertically */
+
+@media (max-width: 640px) {
+  .post-card__inner {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .post-card__thumb {
+    width: 120px;
+    height: 90px;
+  }
+}
+
+/* Empty state */
+
+.empty-feed {
+  margin-top: 32px;
+  font-size: 14px;
+  color: #757575;
+}
+
+/* base */
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #ffffff;
+}
+
+/* whole app */
+.app-root {
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+/* ====== HEADER / NAVBAR ====== */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 40px; /* Note: 40px left padding */
+  background: #ffffff;
+  border-bottom: 1px solid #e6e6e6;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* left part: menu + logo + search */
+.site-header-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* hamburger */
+.menu-button {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.menu-button span {
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background: #191919;
+}
+
+/* logo */
+.logo {
+  font-family: "Georgia", "Times New Roman", serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #191919;
+  text-decoration: none;
+}
+
+/* search */
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  width: 260px;
+  max-width: 320px;
+  background: #f5f5f5;
+  border-radius: 999px;
+}
+
+.search-icon {
+  font-size: 14px;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+}
+
+/* right part: write + bell + avatar */
+.site-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.icon-button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+/* "Write" pill button */
+.write-button {
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 1px solid #191919;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  color: #191919;
+  background: #ffffff;
+}
+
+.write-button:hover {
+  background: #191919;
+  color: #ffffff;
+}
+
+/* avatar circle */
+.avatar-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background: #f4511e; /* orange-ish like Medium */
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+
+/* ====== LAYOUT: SIDEBAR + CONTENT ====== */
+
+.app-main {
+  /* Removed max-width and margin auto to let sidebar sit on the left edge */
+  display: flex;
+  width: 100%;
+}
+
+.sidebar {
+  width: 260px; /* Fixed side width */
+  padding-top: 40px; 
+  padding-left: 40px; /* ALIGNMENT: Matches Header padding */
+  padding-right: 20px;
+  border-right: 1px solid #f2f2f2;
+  
+  /* Make it a full height sticky rail */
+  position: sticky;
+  top: 65px; /* height of header approx */
+  height: calc(100vh - 65px);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar li {
+  margin-bottom: 24px; /* More spacing like Medium */
+}
+
+.sidebar a {
+  text-decoration: none;
+  color: #757575; /* Gray text */
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sidebar a:hover {
+  color: #191919; /* Black on hover */
+}
+
+.app-content {
+  flex: 1;
+  /* Content stays centered because .home-layout has margin: 0 auto */
+}
+
+/* TABS (For you) */
+
+.tabs {
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid #e6e6e6;
+  margin-bottom: 24px;
+}
+
+.tab {
+  padding: 8px 0;
+  font-size: 14px;
+  color: #6b6b6b;
+  background: none;
+  border: none;
+  cursor: default;
+}
+
+.tab.active {
+  color: #000000;
+  border-bottom: 2px solid #000000;
+}
+
+/* ====== PROFILE PAGE ====== */
+
+.profile-layout {
+  max-width: 1040px;
+  margin: 40px auto;
+  padding: 0 40px;
+  display: flex;
+  gap: 48px;
+}
+
+/* left column (main content) */
+.profile-main {
+  flex: 1;
+}
+
+/* big name at top */
+.profile-title {
+  font-size: 40px;
+  font-weight: 700;
+  margin: 0 0 24px;
+}
+
+/* tabs: Home / About */
+.profile-tabs {
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid #e6e6e6;
+  margin-bottom: 24px;
+}
+
+.profile-tab {
+  padding: 10px 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #757575;
+}
+
+.profile-tab--active {
+  color: #191919;
+  font-weight: 600;
+  border-bottom: 2px solid #191919;
+  margin-bottom: -1px;
+}
+
+/* "Reading list" card */
+.profile-card {
+  border-radius: 4px;
+  border: 1px solid #f0f0f0;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(242, 242, 242, 0.8);
+  padding: 16px 20px;
+  font-size: 14px;
+}
+
+.profile-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.profile-card-meta {
+  font-size: 13px;
+  color: #757575;
+}
+
+/* right column (avatar + edit profile) */
+.profile-aside {
+  width: 260px;
+  flex-shrink: 0;
+}
+
+.profile-avatar-big {
+  width: 80px;
+  height: 80px;
+  border-radius: 999px;
+  background: #f4511e;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.profile-aside-name {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.profile-edit-button {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 14px;
+  color: #1a8917;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: 0;
+}

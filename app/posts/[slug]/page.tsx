@@ -40,7 +40,7 @@ export default async function PostPage({ params }: Props) {
 
   const post = await prisma.post.findUnique({
     where: { slug },
-    include: { author: true, tags: true },
+    include: { author: true},
   })
 
   if (!post) return notFound()

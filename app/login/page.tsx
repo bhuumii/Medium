@@ -25,7 +25,7 @@ export default function LoginPage() {
       redirect: false,
       email,
       password,
-      callbackUrl,
+    callbackUrl: '/home', 
     })
 
     setLoading(false)
@@ -52,7 +52,7 @@ export default function LoginPage() {
       {/* Google sign in */}
       <button
         type="button"
-        onClick={() => signIn('google', { callbackUrl })}
+        onClick={() => signIn('google', {  callbackUrl: '/home' })}
         className="w-full border rounded-full px-4 py-2 mb-4 text-sm flex items-center justify-center gap-2"
       >
         <span>Sign in with Google</span>
