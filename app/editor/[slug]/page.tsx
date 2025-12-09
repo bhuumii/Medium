@@ -4,17 +4,21 @@ import { notFound } from "next/navigation";
 import Editor from "../../../components/Editor";
 
 interface Props {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export default async function EditPostPage({ params }: Props) {
+  // Await params first
+  const resolved = await params;
+  const slug = resolved.slug;
+
   const post = await prisma.post.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
   });
 
   if (!post) return notFound();
 
-  // Pass existing data to your Editor component (you'll need to add props there)
+  // Pass existing data to your Editor component
   return (
     <Editor
       initialTitle={post.title}

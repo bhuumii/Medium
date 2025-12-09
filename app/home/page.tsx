@@ -25,11 +25,17 @@ export default async function HomeSignedIn({ searchParams }: HomePageProps) {
   const resolved = await searchParams;
   const activeTab = resolved.tab === "by-you" ? "by-you" : "for-you";
 
-  // 2) Fetch posts depending on tab
+  // 2) Fetch posts depending on tab - ONLY PUBLISHED POSTS
   const where =
     activeTab === "by-you"
-      ? { authorId: userId } // posts written by the current user
-      : { authorId: { not: userId } }; // posts by others
+      ? { 
+          authorId: userId,
+          isPublished: true  // ✅ Only show published posts in "By You"
+        }
+      : { 
+          authorId: { not: userId },
+          isPublished: true  // ✅ Only show published posts in "For You"
+        };
 
   const posts = await prisma.post.findMany({
     where,
@@ -56,8 +62,8 @@ export default async function HomeSignedIn({ searchParams }: HomePageProps) {
           <a
             className={
               activeTab === "for-you"
-                ? "feed-tab feed-tab--active"
-                : "feed-tab"
+                ? "feed-tab feed-tab--active no-underline"
+                : "feed-tab no-underline"
             }
             href="/home?tab=for-you"
           >
@@ -66,8 +72,8 @@ export default async function HomeSignedIn({ searchParams }: HomePageProps) {
           <a
             className={
               activeTab === "by-you"
-                ? "feed-tab feed-tab--active"
-                : "feed-tab"
+                ? "feed-tab feed-tab--active no-underline"
+                : "feed-tab no-underline"
             }
             href="/home?tab=by-you"
           >
@@ -88,8 +94,10 @@ export default async function HomeSignedIn({ searchParams }: HomePageProps) {
 
         {posts.length === 0 && (
           <p className="empty-feed">
-            No stories yet. Click on <strong>Write</strong> in the top bar to
-            publish your first one.
+            {activeTab === "by-you" 
+              ? "You haven't published any stories yet. Click on Write to publish your first one."
+              : "No stories yet from other users."
+            }
           </p>
         )}
       </section>

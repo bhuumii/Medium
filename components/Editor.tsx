@@ -5,14 +5,38 @@ import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type EditorProps = {
-  // you can add props later if needed
+  initialTitle?: string;
+  initialExcerpt?: string;
+  initialContent?: string;
+  postId?: string;
 };
 
-export default function Editor(_props: EditorProps) {
+// Define styles at the top level
+const toolbarButtonStyle: React.CSSProperties = {
+  border: "none",
+  background: "transparent",
+  color: "inherit",
+  cursor: "pointer",
+  fontSize: "0.95rem",
+};
+
+const linkInputStyle: React.CSSProperties = {
+  width: "100%",
+  marginTop: "0.25rem",
+  marginBottom: "0.5rem",
+  padding: "0.3rem 0.4rem",
+  borderRadius: 4,
+  border: "1px solid #555",
+  background: "#111",
+  color: "white",
+};
+
+export default function Editor(props: EditorProps) {
   const router = useRouter();
 
-  const [title, setTitle] = useState("");
-  const [excerpt, setExcerpt] = useState("");
+  const [title, setTitle] = useState(props.initialTitle || "");
+  const [excerpt, setExcerpt] = useState(props.initialExcerpt || "");
+  const [isSaving, setIsSaving] = useState(false);
 
   // HTML will live inside this contentEditable div
   const editorRef = useRef<HTMLDivElement | null>(null);
@@ -54,7 +78,7 @@ export default function Editor(_props: EditorProps) {
     }
   }
 
-  // NEW: toggle blockquote for the “ icon
+  // NEW: toggle blockquote for the " icon
   function toggleBlockQuote() {
     if (typeof window === "undefined") return;
 
@@ -188,28 +212,92 @@ export default function Editor(_props: EditorProps) {
     setLinkUrl("");
   }
 
-  /* ---------------- publish ---------------- */
+  /* ---------------- publish / update / draft ---------------- */
 
-  async function handlePublish(e: FormEvent) {
-    e.preventDefault();
+  async function handleSave(isPublished: boolean) {
+    if (isSaving) return;
+    
     const contentHtml = editorRef.current?.innerHTML ?? "";
 
-    const res = await fetch("/api/posts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title,
-        excerpt,
-        content: contentHtml,
-      }),
-    });
-
-    if (!res.ok) {
-      console.error("Failed to publish post");
+    if (!title.trim()) {
+      alert("Please add a title");
       return;
     }
 
-    router.push("/home");
+    setIsSaving(true);
+
+    try {
+      // If we have a postId, UPDATE the post; otherwise CREATE new
+      if (props.postId) {
+        const res = await fetch(`/api/posts/${props.postId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title,
+            excerpt,
+            content: contentHtml,
+            isPublished,
+          }),
+        });
+
+        if (!res.ok) {
+          console.error("Failed to update post");
+          alert("Failed to update post");
+          return;
+        }
+
+        const updatedPost = await res.json();
+        
+        // Redirect based on published status
+        if (isPublished) {
+          router.push(`/posts/${updatedPost.slug}`);
+        } else {
+          router.push("/stories?tab=drafts");
+        }
+      } else {
+        // Create new post
+        const res = await fetch("/api/posts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title,
+            excerpt,
+            content: contentHtml,
+            isPublished,
+          }),
+        });
+
+        if (!res.ok) {
+          console.error("Failed to save post");
+          alert("Failed to save post");
+          return;
+        }
+
+        const newPost = await res.json();
+
+        // Redirect based on published status
+        if (isPublished) {
+          router.push(`/posts/${newPost.slug}`);
+        } else {
+          router.push("/stories?tab=drafts");
+        }
+      }
+    } catch (error) {
+      console.error("Error saving post:", error);
+      alert("Error saving post");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handlePublish(e: FormEvent) {
+    e.preventDefault();
+    await handleSave(true);
+  }
+
+  async function handleDraft(e: React.MouseEvent) {
+    e.preventDefault();
+    await handleSave(false);
   }
 
   /* ---------------- render ---------------- */
@@ -231,19 +319,41 @@ export default function Editor(_props: EditorProps) {
           }}
         >
           <div style={{ fontSize: "1.3rem", fontWeight: 600 }}>Medium</div>
-          <button
-            type="submit"
-            style={{
-              borderRadius: 20,
-              padding: "0.25rem 1rem",
-              border: "none",
-              background: "#1a8917",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
-            Publish
-          </button>
+          
+          {/* Buttons Container */}
+          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+            <button
+              type="button"
+              onClick={handleDraft}
+              disabled={isSaving}
+              style={{
+                borderRadius: 20,
+                padding: "0.25rem 1rem",
+                border: "1px solid #ddd",
+                background: "white",
+                color: "#242424",
+                cursor: isSaving ? "not-allowed" : "pointer",
+                opacity: isSaving ? 0.6 : 1,
+              }}
+            >
+              Save as Draft
+            </button>
+            <button
+              type="submit"
+              disabled={isSaving}
+              style={{
+                borderRadius: 20,
+                padding: "0.25rem 1rem",
+                border: "none",
+                background: "#1a8917",
+                color: "white",
+                cursor: isSaving ? "not-allowed" : "pointer",
+                opacity: isSaving ? 0.6 : 1,
+              }}
+            >
+              {isSaving ? "Saving..." : props.postId ? "Update" : "Publish"}
+            </button>
+          </div>
         </div>
 
         {/* fixed formatting toolbar */}
@@ -289,16 +399,14 @@ export default function Editor(_props: EditorProps) {
           >
             T
           </button>
-          {/* UPDATED: quote button now uses blockquote */}
           <button
             type="button"
             onClick={toggleBlockQuote}
             style={toolbarButtonStyle}
             title="Quote"
           >
-            “
+            "
           </button>
-          {/* 💬 still highlights the selected text */}
           <button
             type="button"
             onClick={() => toggleInlineSpan("editor-comment")}
@@ -345,6 +453,7 @@ export default function Editor(_props: EditorProps) {
           ref={editorRef}
           contentEditable
           suppressContentEditableWarning
+          dangerouslySetInnerHTML={{ __html: props.initialContent || "" }}
           style={{
             minHeight: "50vh",
             outline: "none",
@@ -352,11 +461,6 @@ export default function Editor(_props: EditorProps) {
             lineHeight: 1.7,
           }}
         />
-
-        {/* you can hide this button visually if you like; Publish is in the header */}
-        <button type="submit" style={{ display: "none" }}>
-          Publish
-        </button>
       </form>
 
       {/* small inline link dialog */}
@@ -441,7 +545,6 @@ export default function Editor(_props: EditorProps) {
 
       {/* styles */}
       <style jsx global>{`
-        /* quote block: slant line + italic */
         blockquote {
           border-left: 3px solid #ddd;
           margin: 0 0 1rem 0;
@@ -449,7 +552,6 @@ export default function Editor(_props: EditorProps) {
           font-style: italic;
           color: #555;
         }
-        /* 💬 highlight */
         span.editor-comment {
           background: #e8f3ff;
           border-radius: 999px;
@@ -459,24 +561,3 @@ export default function Editor(_props: EditorProps) {
     </main>
   );
 }
-
-/* ---------- small shared style objects ---------- */
-
-const toolbarButtonStyle: React.CSSProperties = {
-  border: "none",
-  background: "transparent",
-  color: "inherit",
-  cursor: "pointer",
-  fontSize: "0.95rem",
-};
-
-const linkInputStyle: React.CSSProperties = {
-  width: "100%",
-  marginTop: "0.25rem",
-  marginBottom: "0.5rem",
-  padding: "0.3rem 0.4rem",
-  borderRadius: 4,
-  border: "1px solid #555",
-  background: "#111",
-  color: "white",
-};

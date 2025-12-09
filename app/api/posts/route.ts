@@ -1,4 +1,4 @@
-
+// app/api/posts/route.ts
 import { NextResponse } from 'next/server'
 import { prisma } from '../../../lib/prisma'
 import { getServerSession } from 'next-auth/next'
@@ -30,10 +30,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
     }
 
-    const { title, excerpt, content } = body as {
+    const { title, excerpt, content, isPublished } = body as {
       title?: string
       excerpt?: string
       content?: string
+      isPublished?: boolean
     }
 
     if (!title || typeof title !== 'string' || !title.trim()) {
@@ -68,9 +69,8 @@ export async function POST(req: Request) {
         content: content ?? '',
         slug,
         authorId: author.id,
-
-        isPublished: true,
-    publishedAt: new Date(),
+        isPublished: isPublished ?? true,
+        publishedAt: isPublished ? new Date() : null,
       },
     })
 

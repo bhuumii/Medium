@@ -25,9 +25,9 @@ export default async function StoriesPage({ searchParams }: StoriesPageProps) {
     orderBy: { createdAt: "desc" },
   });
 
-  // Separate drafts vs published
-  const drafts: typeof posts = []; 
-  const published = posts;
+  // Separate drafts vs published based on isPublished field
+  const drafts = posts.filter(post => !post.isPublished);
+  const published = posts.filter(post => post.isPublished);
 
   const activeTab = tab === "drafts" ? "drafts" : "published";
   const activeList = activeTab === "drafts" ? drafts : published;
@@ -104,7 +104,6 @@ export default async function StoriesPage({ searchParams }: StoriesPageProps) {
                       href={`/editor/${post.slug}`}
                       className="relative group/edit flex flex-col items-center gap-1"
                     >
-                      {/* Pencil Icon with hover background */}
                       <div className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-[#F2F2F2] transition-colors">
                         <svg 
                           width="20" 
@@ -122,8 +121,6 @@ export default async function StoriesPage({ searchParams }: StoriesPageProps) {
                           />
                         </svg>
                       </div>
-
-                      {/* Simple Text Tooltip - Below Icon */}
                       <span className="text-[11px] text-[#6B6B6B] whitespace-nowrap opacity-0 group-hover/edit:opacity-100 transition-opacity">
                         Click to edit
                       </span>

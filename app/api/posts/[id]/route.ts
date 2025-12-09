@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../../lib/prisma';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../../../lib/auth'; // FIXED: Match the other file
+import { authOptions } from '../../../../lib/auth';
 
 export async function PUT(
   req: Request,
@@ -22,10 +22,11 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
-    const { title, excerpt, content } = body as {
+    const { title, excerpt, content, isPublished } = body as {
       title?: string;
       excerpt?: string;
       content?: string;
+      isPublished?: boolean;
     };
 
     if (!title || typeof title !== 'string' || !title.trim()) {
@@ -56,6 +57,8 @@ export async function PUT(
         title,
         excerpt: excerpt ?? '',
         content: content ?? '',
+        isPublished: isPublished !== undefined ? isPublished : existingPost.isPublished,
+        publishedAt: isPublished && !existingPost.isPublished ? new Date() : existingPost.publishedAt,
       },
     });
 
