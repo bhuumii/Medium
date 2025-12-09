@@ -566,3 +566,124 @@ body {
 .post-card__bookmark--saved svg path {
   fill: #000;
 }
+
+/* overall layout */
+.editor-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+
+/* toolbar */
+.editor-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: inline-flex;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  margin-bottom: 1.5rem;
+  border-radius: 999px;
+  background: #191919;
+  color: white;
+}
+.editor-toolbar button {
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.9rem;
+}
+
+/* inputs */
+.editor-title {
+  font-size: 2.3rem;
+  font-weight: 500;
+  border: none;
+  outline: none;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+.editor-excerpt {
+  border: none;
+  outline: none;
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+/* content editable area */
+.editor-content {
+  min-height: 300px;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  outline: none;
+}
+
+/* quote block */
+.editor-content blockquote {
+  border-left: 3px solid #222;
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-right: 0;
+  font-style: italic;
+}
+
+/* publish button */
+.editor-publish {
+  margin-top: 2rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 999px;
+  border: none;
+  background: #1a8917;
+  color: white;
+  cursor: pointer;
+}
+span.editor-quote {
+  font-style: italic;
+  border-left: 3px solid #ddd;
+  padding-left: 0.75rem;
+  display: block;
+  margin: 0.75rem 0;
+}
+
+span.editor-comment {
+  background: #e8f3ff;
+  border-radius: 999px;
+  padding: 0 0.3rem;
+}
+
+/* Overall article text */
+.post-content p {
+  margin: 0 0 1.1rem;
+}
+
+/* Links inside posts */
+.post-content a {
+  color: #1a8917;
+  text-decoration: none;
+}
+.post-content a:hover {
+  text-decoration: underline;
+}
+
+/* Blockquotes – similar to Medium */
+.post-content blockquote {
+  margin: 1.5rem 0;
+  padding-left: 1.1rem;
+  border-left: 3px solid #e6e6e6;
+  color: #6b6b6b;
+  font-style: italic;
+}
+
+/* Our custom highlight types from the editor */
+.post-content span.editor-quote {
+  background: #fff5c2;
+  padding: 0 0.15rem;
+}
+
+.post-content span.editor-comment {
+  background: #e8f3ff;
+  border-radius: 999px;
+  padding: 0 0.3rem;
+}

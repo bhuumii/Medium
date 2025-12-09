@@ -68,6 +68,9 @@ export async function POST(req: Request) {
         content: content ?? '',
         slug,
         authorId: author.id,
+
+        isPublished: true,
+    publishedAt: new Date(),
       },
     })
 

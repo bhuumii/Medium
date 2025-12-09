@@ -1,17 +1,140 @@
-import { redirect } from 'next/navigation'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '../api/auth/[...nextauth]/authOptions'
+// app/stories/page.tsx
+import { prisma } from "../../lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../api/auth/[...nextauth]/authOptions";
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import { formatDate } from "../../lib/formatDate";
 
-export default async function StoriesPage() {
-  const session = await getServerSession(authOptions)
-  if (!session) redirect('/')
+interface StoriesPageProps {
+  searchParams: Promise<{ tab?: string }>;
+}
+
+export default async function StoriesPage({ searchParams }: StoriesPageProps) {
+  const { tab } = await searchParams;
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+
+  const userId = session.user.id;
+
+  const posts = await prisma.post.findMany({
+    where: { authorId: userId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  // Separate drafts vs published
+  const drafts: typeof posts = []; 
+  const published = posts;
+
+  const activeTab = tab === "drafts" ? "drafts" : "published";
+  const activeList = activeTab === "drafts" ? drafts : published;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-4">Your stories</h1>
-      <p className="text-sm text-[#6b6b6b]">
-        Later we’ll list all posts written by you, with edit/draft options.
-      </p>
-    </div>
-  )
+    <main className="home-layout">
+      {/* Header with tabs */}
+      <section className="feed-header">
+        <h1 className="text-[42px] font-bold text-[#242424] tracking-tight leading-tight mb-10">
+          Stories
+        </h1>
+        <div className="feed-tabs">
+          <Link 
+            href="/stories?tab=drafts"
+            className={`feed-tab no-underline ${activeTab === "drafts" ? "feed-tab--active" : ""}`}
+          >
+            Drafts {drafts.length > 0 && <span className="ml-1.5 text-[#6B6B6B] text-[13px]">{drafts.length}</span>}
+          </Link>
+          <Link 
+            href="/stories?tab=published"
+            className={`feed-tab no-underline ${activeTab === "published" ? "feed-tab--active" : ""}`}
+          >
+            Published {published.length > 0 && <span className="ml-1.5 text-[#6B6B6B] text-[13px]">{published.length}</span>}
+          </Link>
+        </div>
+      </section>
+
+      <section className="feed-list">
+        {activeList.length === 0 ? (
+          <p className="empty-feed">
+            {activeTab === "drafts" 
+              ? "You have no drafts." 
+              : "You haven't published any stories yet."}
+          </p>
+        ) : (
+          <div className="space-y-8">
+            {activeList.map((post) => (
+              <article
+                key={post.id}
+                className="group pb-8 border-b border-[#F2F2F2] last:border-b-0"
+              >
+                {/* Story Content */}
+                <div className="flex items-start justify-between gap-6">
+                  {/* Left: Story Info */}
+                  <div className="flex-1 min-w-0">
+                    <Link
+                      href={`/posts/${post.slug}`}
+                      className="block mb-2 group/title"
+                    >
+                      <h2 className="text-[20px] font-bold text-[#242424] leading-tight group-hover/title:text-[#000] transition-colors">
+                        {post.title}
+                      </h2>
+                    </Link>
+
+                    {post.excerpt && (
+                      <p className="text-[#6B6B6B] text-[16px] leading-[24px] mb-3 line-clamp-2">
+                        {post.excerpt}
+                      </p>
+                    )}
+
+                    {/* Meta Info */}
+                    <div className="flex items-center gap-2 text-[13px] text-[#6B6B6B]">
+                      <span className="inline-flex items-center bg-[#F2F2F2] px-2 py-1 rounded text-[#242424] font-normal">
+                        {activeTab === "drafts" ? "Draft" : "Published"}
+                      </span>
+                      <span>·</span>
+                      <span>{formatDate(post.createdAt)}</span>
+                    </div>
+                  </div>
+
+                  {/* Right: Edit Icon */}
+                  <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <Link
+                      href={`/editor/${post.slug}`}
+                      className="relative group/edit flex flex-col items-center gap-1"
+                    >
+                      {/* Pencil Icon with hover background */}
+                      <div className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-[#F2F2F2] transition-colors">
+                        <svg 
+                          width="20" 
+                          height="20" 
+                          viewBox="0 0 24 24" 
+                          fill="none" 
+                          className="text-[#6B6B6B] group-hover/edit:text-[#242424] transition-colors"
+                        >
+                          <path 
+                            d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" 
+                            stroke="currentColor" 
+                            strokeWidth="1.5" 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </div>
+
+                      {/* Simple Text Tooltip - Below Icon */}
+                      <span className="text-[11px] text-[#6B6B6B] whitespace-nowrap opacity-0 group-hover/edit:opacity-100 transition-opacity">
+                        Click to edit
+                      </span>
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+    </main>
+  );
 }
