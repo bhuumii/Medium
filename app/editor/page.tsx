@@ -1,28 +1,25 @@
-
-
-import Link from 'next/link'
-import Editor from '../../components/Editor'
-import { redirect } from 'next/navigation'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '../../lib/auth'
+// app/editor/page.tsx
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../api/auth/[...nextauth]/authOptions";
+import Editor from "../../components/Editor";
 
 export default async function EditorPage() {
-  const session = await getServerSession(authOptions)
+  const session = await getServerSession(authOptions);
 
   if (!session) {
-    redirect('/login?callbackUrl=/editor')
+    redirect("/login");
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-4">
-        <Link href="/" className="text-sm text-[#6b6b6b] hover:underline">
-          ← Back
-        </Link>
-      </div>
-
-      <h1 className="text-3xl font-bold mb-6">Write</h1>
+    <main
+      style={{
+        maxWidth: "900px",
+        margin: "0 auto",
+        padding: "2rem 1.5rem 4rem",
+      }}
+    >
       <Editor />
-    </div>
-  )
+    </main>
+  );
 }

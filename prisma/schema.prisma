@@ -9,23 +9,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ---------- NEXT-AUTH MODELS ----------
-
 model User {
   id            String   @id @default(cuid())
   name          String?
   email         String?  @unique
   emailVerified DateTime?
   image         String?
-  passwordHash  String?  
 
   accounts      Account[]
   sessions      Session[]
   posts         Post[]
 
-  pronouns  String?   // optional
-  shortBio  String?   // like Medium's "Short bio"
-  about     String?   // long About-page content
+  pronouns      String?
+  shortBio      String?
+  about         String?
+
+  // NEW: saved posts
+  bookmarks     Bookmark[]
 }
 
 model Account {
@@ -78,4 +78,23 @@ model Post {
 
   authorId String
   author   User @relation(fields: [authorId], references: [id])
+
+  // NEW: who saved this post
+  bookmarks Bookmark[]
+}
+
+
+
+// NEW MODEL: one row = one saved post by one user
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // a user can save a post only once
+  @@unique([userId, postId])
 }

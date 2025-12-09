@@ -1,3 +1,4 @@
+// app/profile/ProfilePageClient.tsx
 "use client";
 
 import { useState, FormEvent } from "react";
@@ -15,78 +16,20 @@ interface ProfilePageClientProps {
 }
 
 export default function ProfilePageClient({ user }: ProfilePageClientProps) {
-  const [activeTab, setActiveTab] = useState<"home" | "about">("about");
   const [mode, setMode] = useState<"summary" | "edit">("summary");
 
   return (
     <div style={{ maxWidth: 700, margin: "0 auto", padding: "2rem 1rem" }}>
-      {/* Tabs */}
-      <nav
-        style={{
-          display: "flex",
-          gap: "1.5rem",
-          borderBottom: "1px solid #ddd",
-          marginBottom: "1.5rem",
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => setActiveTab("home")}
-          style={{
-            padding: "0.5rem 0",
-            border: "none",
-            borderBottom:
-              activeTab === "home" ? "2px solid black" : "2px solid transparent",
-            background: "none",
-            cursor: "pointer",
-            fontWeight: activeTab === "home" ? 600 : 400,
-          }}
-        >
-          Home
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("about")}
-          style={{
-            padding: "0.5rem 0",
-            border: "none",
-            borderBottom:
-              activeTab === "about" ? "2px solid black" : "2px solid transparent",
-            background: "none",
-            cursor: "pointer",
-            fontWeight: activeTab === "about" ? 600 : 400,
-          }}
-        >
-          About
-        </button>
-      </nav>
-
-      {/* HOME TAB (placeholder for now) */}
-      {activeTab === "home" && (
-        <div>
-          <p>Home content coming later…</p>
-        </div>
-      )}
-
-      {/* ABOUT TAB */}
-      {activeTab === "about" && mode === "summary" && (
-        <AboutSummary
-          user={user}
-          onEdit={() => setMode("edit")}
-        />
-      )}
-
-      {activeTab === "about" && mode === "edit" && (
-        <EditProfileForm
-          user={user}
-          onDone={() => setMode("summary")}
-        />
+      {mode === "summary" ? (
+        <AboutSummary user={user} onEdit={() => setMode("edit")} />
+      ) : (
+        <EditProfileForm user={user} onDone={() => setMode("summary")} />
       )}
     </div>
   );
 }
 
-/* ---------- About summary view (first screenshot) ---------- */
+/* ---------- About summary view ---------- */
 
 function AboutSummary({
   user,
@@ -106,7 +49,7 @@ function AboutSummary({
             width: 72,
             height: 72,
             borderRadius: "50%",
-            backgroundColor: "#c63d0f", // similar to Medium-like avatar colour
+            backgroundColor: "#c63d0f",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -136,7 +79,7 @@ function AboutSummary({
           padding: 0,
           border: "none",
           background: "none",
-          color: "#1a8917", // green-ish like Medium
+          color: "#1a8917",
           cursor: "pointer",
           fontSize: "0.95rem",
         }}
@@ -154,7 +97,7 @@ function AboutSummary({
   );
 }
 
-/* ---------- Edit profile form (second screenshot) ---------- */
+/* ---------- Edit profile form ---------- */
 
 function EditProfileForm({
   user,
@@ -194,7 +137,6 @@ function EditProfileForm({
       }
 
       setStatus("saved");
-      // Go back to summary view
       onDone();
     } catch (err) {
       console.error(err);

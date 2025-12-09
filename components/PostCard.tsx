@@ -1,28 +1,64 @@
 // components/PostCard.tsx
-"use client"
+"use client";
 
-import Link from "next/link"
-import { formatDate } from "../lib/formatDate"
+import Link from "next/link";
+import { useState, MouseEvent } from "react";
+import { formatDate } from "../lib/formatDate";
 
 type PostCardProps = {
   post: {
-    id: string
-    title: string
-    excerpt: string | null
-    slug: string
-    content?: string | null
-    createdAt: Date
+    id: string;
+    title: string;
+    excerpt: string | null;
+    slug: string;
+    content?: string | null;
+    createdAt: Date;
     author?: {
-      name: string | null
-    } | null
-  }
-}
+      name: string | null;
+    } | null;
+  };
+  // whether this post is saved for the current user (from the server)
+  initialIsSaved: boolean;
+};
 
-export default function PostCard({ post }: PostCardProps) {
-  const authorName = post.author?.name ?? "Unknown"
-  const date = formatDate(post.createdAt)
-  // Very rough read time – you can improve this later
-  const readTime = "1 min read"
+export default function PostCard({ post, initialIsSaved }: PostCardProps) {
+  const authorName = post.author?.name ?? "Unknown";
+  const date = formatDate(post.createdAt);
+  const readTime = "1 min read";
+
+  const [isSaved, setIsSaved] = useState<boolean>(initialIsSaved);
+  const [saving, setSaving] = useState(false);
+
+  async function handleToggleSave(e: MouseEvent<HTMLButtonElement>) {
+    // don’t navigate to the post when clicking the bookmark
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (saving) return;
+    setSaving(true);
+
+    try {
+      const res = await fetch("/api/bookmarks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId: post.id }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to toggle bookmark");
+      }
+
+      const data = (await res.json()) as { saved: boolean };
+      setIsSaved(data.saved);
+    } catch (err) {
+      console.error(err);
+      // optional: show toast/snackbar later
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const tooltip = isSaved ? "Click to unsave" : "Click to save";
 
   return (
     <article className="post-card">
@@ -44,12 +80,30 @@ export default function PostCard({ post }: PostCardProps) {
           )}
 
           <div className="post-card__footer">
+            {/* Bookmark button instead of “Save” text */}
             <button
               type="button"
-              className="post-card__save"
-              onClick={(e) => e.preventDefault()} // don't navigate when clicking Save
+              className={`post-card__bookmark ${isSaved ? "post-card__bookmark--saved" : ""}`}
+              onClick={handleToggleSave}
+              aria-label={tooltip}
+              title={tooltip}
+              disabled={saving}
             >
-              Save
+              {/* Simple bookmark SVG (outline vs filled) */}
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  d="M6 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v17l-7-4-7 4V4z"
+                  fill={isSaved ? "#000" : "none"}
+                  stroke="#000"
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </button>
           </div>
         </div>
@@ -58,5 +112,5 @@ export default function PostCard({ post }: PostCardProps) {
         <div className="post-card__thumb" />
       </Link>
     </article>
-  )
+  );
 }

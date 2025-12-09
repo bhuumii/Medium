@@ -547,3 +547,22 @@ body {
 .avatar-menu-signout {
   color: #b3261e;
 }
+
+.post-card__bookmark {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.post-card__bookmark:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.post-card__bookmark--saved svg path {
+  fill: #000;
+}
