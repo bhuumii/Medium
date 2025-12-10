@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import AuthModal from './AuthModal'
 
-type Mode = 'signup' | 'signin' | 'write'
+type Mode = 'signup' | 'signin' 
 
 export default function HeaderNav() {
   const { data: session, status } = useSession()
@@ -51,13 +51,7 @@ export default function HeaderNav() {
           Membership
         </Link>
 
-        <button
-          type="button"
-          onClick={() => setOpenMode('write')}
-          className="hover:underline"
-        >
-          Write
-        </button>
+     
 
         <button
           type="button"
@@ -76,7 +70,13 @@ export default function HeaderNav() {
         </button>
       </nav>
 
-      {openMode && <AuthModal mode={openMode} onClose={closeModal} />}
+      {openMode && (
+  <AuthModal
+    isOpen={true}
+    mode={openMode}
+    onClose={closeModal}
+  />
+)}
     </>
   )
 }
