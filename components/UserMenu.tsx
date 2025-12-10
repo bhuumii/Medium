@@ -29,33 +29,39 @@ export default function UserMenu({ name, image }: UserMenuProps) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  const initial = name?.[0]?.toUpperCase() ?? "B"; // fallback initial
+  const initial = name?.[0]?.toUpperCase() ?? "U";
 
   return (
     <div ref={ref} className="relative">
-      {/* red circle avatar button */}
+      {/* Avatar button */}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-700 text-sm font-semibold text-white"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-600 text-sm font-medium text-white hover:bg-orange-700 transition-colors"
+        aria-label="User menu"
       >
         {initial}
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-64 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg">
-          {/* top part that looks like Medium's card */}
-          <div className="flex items-center gap-3 border-b border-gray-100 px-4 py-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-700 text-sm font-semibold text-white">
+        <div 
+          className="absolute right-0 mt-2 w-64 overflow-hidden rounded-md bg-white shadow-xl border border-gray-200"
+          style={{
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+          }}
+        >
+          {/* Top card with avatar and name */}
+          <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-100">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-orange-600 text-base font-medium text-white">
               {initial}
             </div>
-            <div className="text-sm">
-              <div className="font-semibold leading-tight">
-                {name ?? "Your profile"}
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-medium text-gray-900 truncate">
+                {name ?? "User"}
               </div>
               <Link
-                href="/profile?tab=about"
-                className="text-xs text-green-700 hover:underline"
+                href="/profile"
+                className="text-xs text-gray-600 hover:text-gray-900 transition-colors"
                 onClick={() => setOpen(false)}
               >
                 View profile
@@ -63,30 +69,32 @@ export default function UserMenu({ name, image }: UserMenuProps) {
             </div>
           </div>
 
-          {/* menu options */}
-          <div className="py-1 text-sm">
+          {/* Menu items */}
+          <div className="py-2">
             <Link
-              href="/profile?tab=about"
-              className="block px-4 py-2 hover:bg-gray-50"
+              href="/profile"
+              className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
               onClick={() => setOpen(false)}
             >
-              View / edit profile
+              View / Edit profile
             </Link>
 
             <Link
-              href="/settings/password"
-              className="block px-4 py-2 hover:bg-gray-50"
+              href="/password"
+              className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
               onClick={() => setOpen(false)}
             >
               Change password
             </Link>
 
+            <div className="border-t border-gray-100 my-2" />
+
             <button
               type="button"
-              className="block w-full px-4 py-2 text-left hover:bg-gray-50"
+              className="block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
               onClick={() => {
                 setOpen(false);
-                signOut(); // next-auth logout
+                signOut({ callbackUrl: "/" });
               }}
             >
               Sign out

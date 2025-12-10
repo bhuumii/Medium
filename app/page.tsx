@@ -1,44 +1,128 @@
+// app/page.tsx
+'use client';
 
-import Link from 'next/link'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '../lib/auth'
+import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import { useState } from 'react';
+import LandingHeader from '../components/LandingHeader';
+import AuthModal from '../components/AuthModal';
 
+export default function Home() {
+  const { data: session, status } = useSession();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'signin' | 'signup'>('signup');
 
+  const isAuthenticated = status === 'authenticated';
 
-export default async function Home() {
-  const session = await getServerSession(authOptions)
-
-
-  const userId = (session?.user as any)?.id
-  const startReadingHref = userId ? `/users/${userId}` : '/login'
+  const handleStartReading = () => {
+    if (isAuthenticated) {
+      window.location.href = '/home';
+    } else {
+      setModalMode('signup');
+      setModalOpen(true);
+    }
+  };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] flex items-center">
-      <div className="mx-auto max-w-5xl w-full px-4 md:px-0 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-        {/* Left side: text */}
-        <section className="space-y-6">
-          <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl leading-tight">
-            Human stories &amp; ideas
+    <div style={{ minHeight: '100vh', background: '#F7F4ED', position: 'relative' }}>
+      {/* Header */}
+      <LandingHeader 
+        session={session} 
+        onSignInClick={() => {
+          setModalMode('signin');
+          setModalOpen(true);
+        }}
+        onGetStartedClick={() => {
+          setModalMode('signup');
+          setModalOpen(true);
+        }}
+      />
+
+      {/* Hero Section */}
+      <div style={{ 
+        maxWidth: '1200px', 
+        margin: '0 auto', 
+        padding: '80px 24px',
+        display: 'flex',
+        alignItems: 'center',
+        minHeight: 'calc(100vh - 80px)'
+      }}>
+        
+        {/* Left Content */}
+        <div style={{ flex: 1, maxWidth: '550px' }}>
+          <h1 style={{ 
+            fontFamily: "Georgia, 'Times New Roman', serif",
+            fontSize: '106px',
+            fontWeight: '400',
+            lineHeight: '1',
+            letterSpacing: '-0.02em',
+            marginBottom: '32px',
+            color: '#242424'
+          }}>
+            Stories That Matter
           </h1>
-          <p className="text-lg md:text-xl text-[#6b6b6b] max-w-xl">
-            A place to read, write, and deepen your understanding.
+          
+          <p style={{ 
+            fontSize: '24px',
+            lineHeight: '1.4',
+            color: '#242424',
+            marginBottom: '48px',
+            maxWidth: '480px'
+          }}>
+            Share your thoughts with readers who care.
           </p>
 
-          <Link
-            href={startReadingHref}
-            className="inline-flex items-center rounded-full bg-black text-white px-6 py-3 text-sm font-medium"
+          <button
+            onClick={handleStartReading}
+            className="start-reading-btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '12px 48px',
+              backgroundColor: '#242424',
+              color: 'white',
+              borderRadius: '999px',
+              fontSize: '18px',
+              fontWeight: '500',
+              border: 'none',
+              cursor: 'pointer',
+            }}
           >
             Start reading
-          </Link>
-        </section>
+          </button>
+        </div>
 
-      
-        <section className="hidden md:flex justify-center">
-          <div className="w-64 h-64 rounded-full bg-green-500/90 shadow-lg flex items-center justify-center text-white text-4xl">
-            ✍️
-          </div>
-        </section>
+        {/* Right Side - Clean empty space */}
+        <div style={{ flex: 1 }} />
       </div>
+
+      {/* Bottom Border */}
+      <div style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '1px',
+        background: '#242424'
+      }} />
+
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={modalOpen} 
+        onClose={() => setModalOpen(false)}
+        mode={modalMode}
+      />
+
+      {/* Hover styles */}
+      <style jsx>{`
+        .start-reading-btn {
+          transition: background-color 0.2s;
+        }
+        .start-reading-btn:hover {
+          background-color: #000 !important;
+        }
+      `}</style>
     </div>
-  )
+  );
 }

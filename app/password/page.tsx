@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 export default function ChangePasswordPage() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -16,10 +16,13 @@ export default function ChangePasswordPage() {
     useState<"idle" | "saving" | "saved" | "error">("idle");
   const [errorText, setErrorText] = useState<string | null>(null);
 
-  // If not logged in, send to login
+  // Check if user has password (not OAuth-only)
+  const hasPassword = session?.user?.email && (session?.user as any)?.hasPassword !== false;
+
+  // If not logged in, send to home
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.replace("/login");
+      router.replace("/");
     }
   }, [status, router]);
 
@@ -54,6 +57,11 @@ export default function ChangePasswordPage() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+      
+      // Auto-hide success message after 3 seconds
+      setTimeout(() => {
+        setStatusMsg("idle");
+      }, 3000);
     } catch (err: any) {
       console.error(err);
       setErrorText(err.message || "Something went wrong");
@@ -62,63 +70,185 @@ export default function ChangePasswordPage() {
   }
 
   if (status === "loading") {
-    return <p style={{ padding: "2rem" }}>Loading…</p>;
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '60vh' 
+      }}>
+        <p style={{ color: '#757575' }}>Loading…</p>
+      </div>
+    );
   }
 
   return (
-    <main style={{ maxWidth: 480, margin: "0 auto", padding: "2rem 1rem" }}>
-      <h1 style={{ fontSize: "1.5rem", marginBottom: "1.5rem" }}>
+    <main style={{ 
+      maxWidth: '600px', 
+      margin: '0 auto', 
+      padding: '3rem 2rem' 
+    }}>
+      <h1 style={{ 
+        fontSize: '2rem', 
+        fontWeight: '700',
+        marginBottom: '2rem',
+        color: '#242424'
+      }}>
         Change password
       </h1>
 
-      <form onSubmit={handleSubmit}>
-        <label style={{ display: "block", marginBottom: "1rem" }}>
-          <div style={{ marginBottom: "0.25rem" }}>Current password</div>
-          <input
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            style={{ width: "100%", padding: "0.4rem" }}
-          />
-        </label>
+      {!hasPassword ? (
+        <div style={{
+          padding: '1.5rem',
+          backgroundColor: '#FFF3CD',
+          border: '1px solid #FFE69C',
+          borderRadius: '8px',
+          color: '#856404'
+        }}>
+          <p style={{ margin: 0, lineHeight: '1.5' }}>
+            <strong>Password login not configured for this account.</strong><br />
+            You signed in with Google. To enable password login, please contact support or create a new account with email/password.
+          </p>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ 
+              display: 'block', 
+              marginBottom: '0.5rem',
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#242424'
+            }}>
+              Current password
+            </label>
+            <input
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              required
+              style={{ 
+                width: '100%', 
+                padding: '12px 16px',
+                border: '1px solid #d9d9d9',
+                borderRadius: '4px',
+                fontSize: '14px',
+                outline: 'none',
+                transition: 'border-color 0.2s',
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#242424'}
+              onBlur={(e) => e.target.style.borderColor = '#d9d9d9'}
+            />
+          </div>
 
-        <label style={{ display: "block", marginBottom: "1rem" }}>
-          <div style={{ marginBottom: "0.25rem" }}>New password</div>
-          <input
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            style={{ width: "100%", padding: "0.4rem" }}
-          />
-        </label>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ 
+              display: 'block', 
+              marginBottom: '0.5rem',
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#242424'
+            }}>
+              New password
+            </label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+              style={{ 
+                width: '100%', 
+                padding: '12px 16px',
+                border: '1px solid #d9d9d9',
+                borderRadius: '4px',
+                fontSize: '14px',
+                outline: 'none',
+                transition: 'border-color 0.2s',
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#242424'}
+              onBlur={(e) => e.target.style.borderColor = '#d9d9d9'}
+            />
+          </div>
 
-        <label style={{ display: "block", marginBottom: "1rem" }}>
-          <div style={{ marginBottom: "0.25rem" }}>Confirm new password</div>
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            style={{ width: "100%", padding: "0.4rem" }}
-          />
-        </label>
+          <div style={{ marginBottom: '2rem' }}>
+            <label style={{ 
+              display: 'block', 
+              marginBottom: '0.5rem',
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#242424'
+            }}>
+              Confirm new password
+            </label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              style={{ 
+                width: '100%', 
+                padding: '12px 16px',
+                border: '1px solid #d9d9d9',
+                borderRadius: '4px',
+                fontSize: '14px',
+                outline: 'none',
+                transition: 'border-color 0.2s',
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#242424'}
+              onBlur={(e) => e.target.style.borderColor = '#d9d9d9'}
+            />
+          </div>
 
-        <button
-          type="submit"
-          disabled={statusMsg === "saving"}
-          style={{ padding: "0.5rem 1rem" }}
-        >
-          {statusMsg === "saving" ? "Changing…" : "Change password"}
-        </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <button
+              type="submit"
+              disabled={statusMsg === "saving"}
+              style={{ 
+                padding: '12px 32px',
+                backgroundColor: statusMsg === "saving" ? '#757575' : '#242424',
+                color: 'white',
+                border: 'none',
+                borderRadius: '999px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: statusMsg === "saving" ? 'not-allowed' : 'pointer',
+                transition: 'background-color 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                if (statusMsg !== "saving") {
+                  e.currentTarget.style.backgroundColor = '#000';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (statusMsg !== "saving") {
+                  e.currentTarget.style.backgroundColor = '#242424';
+                }
+              }}
+            >
+              {statusMsg === "saving" ? "Changing…" : "Change password"}
+            </button>
 
-        {statusMsg === "saved" && !errorText && (
-          <span style={{ marginLeft: "0.75rem", color: "#1a8917" }}>
-            Password updated
-          </span>
-        )}
-      </form>
+            {statusMsg === "saved" && !errorText && (
+              <span style={{ color: '#1a8917', fontSize: '14px', fontWeight: '500' }}>
+                ✓ Password updated successfully
+              </span>
+            )}
+          </div>
+        </form>
+      )}
 
       {errorText && (
-        <p style={{ marginTop: "0.75rem", color: "red" }}>{errorText}</p>
+        <div style={{
+          marginTop: '1.5rem',
+          padding: '1rem 1.5rem',
+          backgroundColor: '#F8D7DA',
+          border: '1px solid #F5C6CB',
+          borderRadius: '8px',
+          color: '#721C24',
+          fontSize: '14px'
+        }}>
+          {errorText}
+        </div>
       )}
     </main>
   );

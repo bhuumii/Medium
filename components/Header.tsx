@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 type HeaderProps = {
   sidebarOpen: boolean;
@@ -13,6 +13,13 @@ type HeaderProps = {
 export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  
+  // Get session data
+  const { data: session } = useSession();
+  
+  // Get user name and avatar initial
+  const userName = session?.user?.name || "User";
+  const avatarInitial = userName.charAt(0).toUpperCase();
 
   // Close avatar menu when clicking outside
   useEffect(() => {
@@ -55,19 +62,13 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
         </div>
       </div>
 
-      {/* RIGHT: write, bell, avatar */}
+      {/* RIGHT: write + avatar (NO BELL) */}
       <div className="site-header-right">
         <Link href="/editor" className="write-button">
           Write
         </Link>
 
-        <button
-          type="button"
-          className="icon-button"
-          aria-label="Notifications"
-        >
-          🔔
-        </button>
+        {/* REMOVED NOTIFICATION BELL */}
 
         {/* Avatar + dropdown menu */}
         <div className="avatar-menu-wrapper" ref={menuRef}>
@@ -78,15 +79,15 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
             aria-haspopup="true"
             aria-expanded={menuOpen}
           >
-            B
+            {avatarInitial}
           </button>
 
           {menuOpen && (
             <div className="avatar-menu">
-              {/* Top card: avatar + name (no "View profile" text here) */}
+              {/* Top card: avatar + name */}
               <div className="avatar-menu-header">
-                <div className="avatar-menu-circle">B</div>
-                <div className="avatar-menu-name">Bhumi</div>
+                <div className="avatar-menu-circle">{avatarInitial}</div>
+                <div className="avatar-menu-name">{userName}</div>
               </div>
 
               {/* Options list */}
@@ -102,7 +103,7 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
                 <button
                   type="button"
                   className="avatar-menu-item avatar-menu-signout"
-                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  onClick={() => signOut({ callbackUrl: "/" })}
                 >
                   Sign out
                 </button>

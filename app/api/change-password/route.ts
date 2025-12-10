@@ -25,14 +25,14 @@ export async function POST(req: Request) {
     where: { email: session.user.email },
   });
 
-  if (!user || !user.passwordHash) {
+  if (!user || !user.password) {  
     return NextResponse.json(
       { error: "Password login not configured for this account" },
       { status: 400 }
     );
   }
 
-  const isCorrect = await bcrypt.compare(currentPassword, user.passwordHash);
+  const isCorrect = await bcrypt.compare(currentPassword, user.password);  
   if (!isCorrect) {
     return NextResponse.json(
       { error: "Current password is incorrect" },
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
 
   await prisma.user.update({
     where: { id: user.id },
-    data: { passwordHash: hashed },
+    data: { password: hashed },  
   });
 
   return NextResponse.json({ ok: true });

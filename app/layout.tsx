@@ -10,15 +10,16 @@ import SessionProviderWrapper from "../components/SessionProviderWrapper";
 export default function RootLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   
-  // Hide AppShell (sidebar/header) for editor pages
+  // Hide AppShell for editor and landing page
   const isEditorPage = pathname?.startsWith("/editor");
+  const isLandingPage = pathname === "/";
 
   return (
     <html lang="en">
       <body>
         <SessionProviderWrapper>
-          {isEditorPage ? (
-            // Editor pages - no AppShell, just content
+          {(isEditorPage || isLandingPage) ? (
+            // No AppShell - just content
             children
           ) : (
             // Regular pages - with AppShell (sidebar + header)
