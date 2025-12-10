@@ -7,6 +7,9 @@ import { formatDate } from "../../../lib/formatDate";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../api/auth/[...nextauth]/authOptions";
 import PostBookmarkButton from "../../../components/PostBookmarkButton";
+import DeletePostButtonInline from "../../../components/DeletePostButtonInline";
+import PublishPostButton from "../../../components/PublishPostButton";
+import EditPostButton from "../../../components/EditPostButton";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -67,14 +70,14 @@ export default async function PostPage({ params }: Props) {
   }
 
   const authorName = post.author?.name ?? "Unknown";
-  
+
   // Dynamic Avatar Initial
   const initial = authorName.charAt(0).toUpperCase();
 
   const date = formatDate(post.createdAt);
 
   // Read Time Calculation
-  const words = post.content.split(/\s+/).length; 
+  const words = post.content.split(/\s+/).length;
   const minutes = Math.ceil(words / 200);
   const readTime = `${minutes} min read`;
 
@@ -82,106 +85,127 @@ export default async function PostPage({ params }: Props) {
     <main className="bg-white min-h-screen w-full font-sans text-left">
       <article className="max-w-[680px] mx-auto px-6 pt-12 pb-32 block text-left">
         
-        {/* --- HEADER --- */}
-        <header className="flex flex-col mb-2">
+        
+              {/* --- HEADER --- */}
+        <header className="flex flex-col" style={{ marginBottom: '2rem' }}>
 
-          {/* TITLE with Edit Icon */}
-          <div className="flex items-start justify-between gap-4 mb-2">
-            <h1 className="text-[76px] md:text-[88px] font-extrabold text-[#242424] leading-[1.1] tracking-tight flex-1">
-              {post.title}
-            </h1>
+          {/* Author Actions - Only for author */}
+          {isAuthor && (
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'flex-end', 
+              marginBottom: '2rem',
+              gap: '12px' // Gap between buttons
+            }}>
+              {/* Publish Button - Only for Drafts */}
+              {!post.isPublished && (
+                <PublishPostButton
+                  postId={post.id}
+                  postSlug={post.slug}
+                />
+              )}
+              
+              {/* Edit Button */}
+              <EditPostButton postSlug={post.slug} />
+              
+              {/* Delete Button */}
+              <DeletePostButtonInline
+                postId={post.id}
+                postTitle={post.title}
+                redirectTo="/stories"
+              />
+            </div>
+          )}
 
-            {/* Edit Icon - Only show if user is author */}
-            {isAuthor && (
-              <Link
-                href={`/editor/${post.slug}`}
-                className="relative group/edit flex flex-col items-center gap-1 mt-4"
-              >
-                <div className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-[#F2F2F2] transition-colors">
-                  <svg 
-                    width="22" 
-                    height="22" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    className="text-[#6B6B6B] group-hover/edit:text-[#242424] transition-colors"
-                  >
-                    <path 
-                      d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" 
-                      stroke="currentColor" 
-                      strokeWidth="1.5" 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-                <span className="text-[11px] text-[#6B6B6B] whitespace-nowrap opacity-0 group-hover/edit:opacity-100 transition-opacity">
-                  Edit
-                </span>
-              </Link>
-            )}
-          </div>
+          {/* TITLE - 43px */}
+          <h1 
+            style={{ 
+              fontFamily: "Charter, Georgia, 'Times New Roman', serif",
+              fontSize: '43px',
+              fontWeight: '700',
+              color: '#242424',
+              lineHeight: '1.2',
+              letterSpacing: '-0.02em',
+              marginBottom: '8px' // Reduced space to excerpt
+            }}
+          >
+            {post.title}
+          </h1>
 
           {/* SUBTITLE */}
           {post.excerpt && (
-            <h2 className="text-[22px] text-[#757575] leading-snug font-normal mb-4 text-left">
+            <h2 
+              style={{ 
+                fontFamily: "Charter, Georgia, 'Times New Roman', serif",
+                fontSize: '20px',
+                color: '#6B6B6B',
+                lineHeight: '1.4',
+                fontWeight: '400',
+                marginBottom: '24px'
+              }}
+            >
               {post.excerpt}
             </h2>
           )}
 
-          {/* AUTHOR ROW - Clean Single Line */}
-          <div className="flex items-center justify-between w-full">
+          {/* AUTHOR ROW */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between', 
+            width: '100%',
+            paddingTop: '8px'
+          }}>
 
             {/* Left: Avatar + Info */}
-            <div className="flex items-center gap-10">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               
-              {/* Avatar: Smaller (32px) */}
-              <div 
+              {/* Avatar: 44px */}
+              <div
                 style={{
-                  width: '32px',
-                  height: '32px',
+                  width: '44px',
+                  height: '44px',
                   borderRadius: '50%',
                   backgroundColor: '#ea580c',
                   color: 'white',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '14px',
-                  fontWeight: 'bold',
+                  fontSize: '16px',
+                  fontWeight: '600',
                   flexShrink: 0
                 }}
               >
                 {initial}
               </div>
 
-              {/* TEXT INFO: Name · Time · Date */}
-              <div className="flex items-center gap-2 text-[15px]">
+              {/* TEXT INFO */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 
                 {/* Name */}
-                <span className="font-medium text-[#242424]">
+                <div style={{ fontSize: '14px', fontWeight: '500', color: '#242424' }}>
                   {authorName}
-                </span>
+                </div>
 
-                {/* Dot Separator */}
-                <span className="text-[#757575]">·</span>
-
-                {/* Read Time */}
-                <span className="text-[#757575]">
-                  {readTime}
-                </span>
-
-                {/* Dot Separator */}
-                <span className="text-[#757575]">·</span>
-
-                {/* Date */}
-                <span className="text-[#757575]">
-                  {date}
-                </span>
+                {/* Meta info */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: '#6B6B6B' }}>
+                  <span>{readTime}</span>
+                  <span>·</span>
+                  <span>{date}</span>
+                </div>
 
               </div>
             </div>
 
             {/* Right: Bookmark Button */}
-            <div className="flex items-center border-l border-gray-200 pl-4 h-6">
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              borderLeft: '1px solid #e5e5e5', 
+              paddingLeft: '16px', 
+              height: '32px' 
+            }}>
               <PostBookmarkButton
                 postId={post.id}
                 initialIsSaved={initialIsSaved}
@@ -191,14 +215,21 @@ export default async function PostPage({ params }: Props) {
           </div>
 
           {/* DIVIDER LINE */}
-          <div className="border-b border-[#f2f2f2] mt-8 w-full"></div>
+          <div style={{ 
+            borderBottom: '1px solid #f2f2f2', 
+            marginTop: '24px', 
+            width: '100%' 
+          }} />
 
         </header>
 
+
+
         {/* --- CONTENT --- */}
-        <div className="prose prose-lg max-w-none text-left mt-12">
+        <div className="prose prose-lg max-w-none text-left mt-10">
           <div
-            className="font-serif text-[20px] text-[#242424] leading-[1.8] tracking-wide text-left [&>p]:mb-8"
+            className="post-content text-[20px] text-[#242424] leading-[1.8] text-left [&>p]:mb-7 [&>p]:font-serif [&_h2]:font-serif [&_h2]:text-[32px] [&_h2]:font-bold [&_h2]:mt-10 [&_h2]:mb-4 [&_h2]:leading-[1.3] [&_blockquote]:border-l-[3px] [&_blockquote]:border-[#ddd] [&_blockquote]:my-6 [&_blockquote]:pl-5 [&_blockquote]:italic [&_blockquote]:text-[#555] [&_blockquote]:font-serif [&_span.editor-comment]:bg-[#e8f3ff] [&_span.editor-comment]:rounded-full [&_span.editor-comment]:px-1.5 [&_a]:text-[#0066cc] [&_a]:underline hover:[&_a]:text-[#0052a3]"
+            style={{ fontFamily: "Charter, Georgia, 'Times New Roman', serif" }}
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
         </div>

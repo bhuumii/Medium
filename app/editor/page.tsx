@@ -11,15 +11,5 @@ export default async function EditorPage() {
     redirect("/login");
   }
 
-  return (
-    <main
-      style={{
-        maxWidth: 800,
-        margin: "0 auto",
-        padding: "3rem 1.5rem 5rem",
-      }}
-    >
-      <Editor />
-    </main>
-  );
+  return <Editor />;
 }

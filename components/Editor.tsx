@@ -1,7 +1,7 @@
 // components/Editor.tsx
 "use client";
 
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 type EditorProps = {
@@ -15,9 +15,12 @@ type EditorProps = {
 const toolbarButtonStyle: React.CSSProperties = {
   border: "none",
   background: "transparent",
-  color: "inherit",
+  color: "#333",
   cursor: "pointer",
-  fontSize: "0.95rem",
+  fontSize: "1rem",
+  padding: "0.35rem 0.5rem",
+  borderRadius: 4,
+  transition: "background 0.2s",
 };
 
 const linkInputStyle: React.CSSProperties = {
@@ -26,9 +29,9 @@ const linkInputStyle: React.CSSProperties = {
   marginBottom: "0.5rem",
   padding: "0.3rem 0.4rem",
   borderRadius: 4,
-  border: "1px solid #555",
-  background: "#111",
-  color: "white",
+  border: "1px solid #ddd",
+  background: "#fff",
+  color: "#333",
 };
 
 export default function Editor(props: EditorProps) {
@@ -47,6 +50,13 @@ export default function Editor(props: EditorProps) {
   const [linkUrl, setLinkUrl] = useState("");
   const savedRangeRef = useRef<Range | null>(null);
 
+  // Set initial content once when component mounts
+  useEffect(() => {
+    if (editorRef.current && props.initialContent && !editorRef.current.innerHTML) {
+      editorRef.current.innerHTML = props.initialContent;
+    }
+  }, [props.initialContent]);
+
   /* ---------------- toolbar helpers ---------------- */
 
   // normal execCommand helpers for bold / italic
@@ -56,6 +66,8 @@ export default function Editor(props: EditorProps) {
     if (!sel || sel.rangeCount === 0) return;
 
     document.execCommand(cmd, false, value ?? "");
+    // Refocus the editor after command
+    editorRef.current?.focus();
   }
 
   // Toggle block size: normal paragraph <p> ↔ heading <h2>
@@ -76,6 +88,8 @@ export default function Editor(props: EditorProps) {
     } else {
       document.execCommand("formatBlock", false, "h2");
     }
+    
+    editorRef.current?.focus();
   }
 
   // NEW: toggle blockquote for the " icon
@@ -99,6 +113,8 @@ export default function Editor(props: EditorProps) {
       // make it a blockquote (slant line + italic via CSS)
       document.execCommand("formatBlock", false, "blockquote");
     }
+    
+    editorRef.current?.focus();
   }
 
   // Generic toggle for inline <span class="...">
@@ -127,6 +143,7 @@ export default function Editor(props: EditorProps) {
         parent.insertBefore(existingSpan.firstChild, existingSpan);
       }
       parent.removeChild(existingSpan);
+      editorRef.current?.focus();
       return;
     }
 
@@ -138,6 +155,8 @@ export default function Editor(props: EditorProps) {
     } catch {
       // if surroundContents fails (partial selection etc.), just skip gracefully
     }
+    
+    editorRef.current?.focus();
   }
 
   /* ---------------- link handling ---------------- */
@@ -146,14 +165,21 @@ export default function Editor(props: EditorProps) {
     if (typeof window === "undefined") return;
 
     const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0) return;
+    if (!sel || sel.rangeCount === 0) {
+      alert("Please select some text first");
+      return;
+    }
+    
     const range = sel.getRangeAt(0);
-    if (range.collapsed) return;
+    if (range.collapsed) {
+      alert("Please select some text to add a link");
+      return;
+    }
 
     // save the range so we can restore it after user types in the dialog
     savedRangeRef.current = range.cloneRange();
 
-    const selectedText = sel.toString();
+    const selectedText = range.toString();
     setLinkText(selectedText);
     setLinkUrl("");
     setShowLinkDialog(true);
@@ -170,39 +196,58 @@ export default function Editor(props: EditorProps) {
     const text = linkText.trim();
     const url = linkUrl.trim();
     if (!text || !url) {
+      alert("Please provide both text and URL");
       setShowLinkDialog(false);
       return;
     }
 
+    // Focus the editor first
+    editorRef.current?.focus();
+
     const sel = window.getSelection();
     if (!sel) return;
 
+    // Restore the saved selection
     sel.removeAllRanges();
     sel.addRange(savedRangeRef.current);
 
-    const range = sel.getRangeAt(0);
-
-    // create <a> element to replace the selection
+    // Create the link element
     const anchor = document.createElement("a");
     anchor.href = url;
     anchor.textContent = text;
     anchor.target = "_blank";
     anchor.rel = "noopener noreferrer";
+    anchor.style.color = "#0066cc";
+    anchor.style.textDecoration = "underline";
 
-    range.deleteContents();
-    range.insertNode(anchor);
-
-    // move caret after inserted link
-    range.setStartAfter(anchor);
-    range.setEndAfter(anchor);
-    sel.removeAllRanges();
-    sel.addRange(range);
+    try {
+      // Delete the selected content
+      savedRangeRef.current.deleteContents();
+      
+      // Insert the link
+      savedRangeRef.current.insertNode(anchor);
+      
+      // Move cursor after the link
+      savedRangeRef.current.setStartAfter(anchor);
+      savedRangeRef.current.setEndAfter(anchor);
+      savedRangeRef.current.collapse(true);
+      
+      sel.removeAllRanges();
+      sel.addRange(savedRangeRef.current);
+    } catch (err) {
+      console.error("Error inserting link:", err);
+    }
 
     // cleanup dialog
     savedRangeRef.current = null;
     setShowLinkDialog(false);
     setLinkText("");
     setLinkUrl("");
+    
+    // Refocus editor
+    setTimeout(() => {
+      editorRef.current?.focus();
+    }, 100);
   }
 
   function handleLinkCancel() {
@@ -210,6 +255,7 @@ export default function Editor(props: EditorProps) {
     setShowLinkDialog(false);
     setLinkText("");
     setLinkUrl("");
+    editorRef.current?.focus();
   }
 
   /* ---------------- publish / update / draft ---------------- */
@@ -303,167 +349,251 @@ export default function Editor(props: EditorProps) {
   /* ---------------- render ---------------- */
 
   return (
-    <main className="editor-page">
-      <form onSubmit={handlePublish} style={{ maxWidth: 800, margin: "0 auto" }}>
-        {/* top bar like Medium */}
-        <div
+    <div className="editor-container" style={{ minHeight: "100vh", background: "#fff" }}>
+      <form onSubmit={handlePublish} style={{ maxWidth: 800, margin: "0 auto", padding: "0 1.5rem", paddingBottom: "120px" }}>
+        {/* Sticky top bar */}
+               <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            padding: "0.75rem 0",
-            position: "sticky",
+            padding: "1rem 1.5rem",
+            position: "fixed",
             top: 0,
+            left: 0,
+            right: 0,
             background: "#fff",
-            zIndex: 10,
+            zIndex: 100,
+            borderBottom: "1px solid #f0f0f0",
           }}
         >
-          <div style={{ fontSize: "1.3rem", fontWeight: 600 }}>Medium</div>
+                  <div style={{ 
+            fontSize: "1.75rem", 
+            fontFamily: "var(--font-serif, Georgia, 'Times New Roman', serif)",
+            fontWeight: 400,
+            letterSpacing: "-0.02em",
+            color: "#000"
+          }}>
+            Medium
+          </div>
+
           
           {/* Buttons Container */}
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+            {/* Save as Draft Button - Light Yellow */}
             <button
               type="button"
               onClick={handleDraft}
               disabled={isSaving}
-              style={{
-                borderRadius: 20,
-                padding: "0.25rem 1rem",
-                border: "1px solid #ddd",
-                background: "white",
-                color: "#242424",
-                cursor: isSaving ? "not-allowed" : "pointer",
-                opacity: isSaving ? 0.6 : 1,
-              }}
+              className="inline-flex items-center justify-center px-10 py-[10px] text-[14px] text-gray-800 bg-[#FEF3C7] border border-[#FEF3C7] rounded-full hover:bg-[#FDE68A] hover:border-[#FDE68A] transition-all font-normal disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap min-w-[95px]"
             >
               Save as Draft
             </button>
+            
+            {/* Publish Button - Light Green */}
             <button
               type="submit"
               disabled={isSaving}
-              style={{
-                borderRadius: 20,
-                padding: "0.25rem 1rem",
-                border: "none",
-                background: "#1a8917",
-                color: "white",
-                cursor: isSaving ? "not-allowed" : "pointer",
-                opacity: isSaving ? 0.6 : 1,
-              }}
+              className="inline-flex items-center justify-center px-10 py-[10px] text-[14px] text-white bg-[#10b981] border border-[#10b981] rounded-full hover:bg-[#059669] hover:border-[#059669] transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap min-w-[95px]"
             >
               {isSaving ? "Saving..." : props.postId ? "Update" : "Publish"}
             </button>
           </div>
         </div>
 
-        {/* fixed formatting toolbar */}
-        <div
-          className="editor-toolbar"
-          style={{
-            display: "inline-flex",
-            gap: "0.5rem",
-            padding: "0.35rem 0.6rem",
-            borderRadius: 20,
-            background: "#1a1a1a",
-            color: "white",
-            marginBottom: "1rem",
-          }}
-        >
-          <button
-            type="button"
-            onClick={() => applyCommand("bold")}
-            style={toolbarButtonStyle}
-          >
-            B
-          </button>
-          <button
-            type="button"
-            onClick={() => applyCommand("italic")}
-            style={toolbarButtonStyle}
-          >
-            <em>i</em>
-          </button>
-          <button
-            type="button"
-            onClick={openLinkDialog}
-            style={toolbarButtonStyle}
-            title="Insert link"
-          >
-            🔗
-          </button>
-          <button
-            type="button"
-            onClick={toggleHeading}
-            style={toolbarButtonStyle}
-            title="Big text"
-          >
-            T
-          </button>
-          <button
-            type="button"
-            onClick={toggleBlockQuote}
-            style={toolbarButtonStyle}
-            title="Quote"
-          >
-            "
-          </button>
-          <button
-            type="button"
-            onClick={() => toggleInlineSpan("editor-comment")}
-            style={toolbarButtonStyle}
-            title="Highlight"
-          >
-            💬
-          </button>
-        </div>
+        {/* Content area with top padding for fixed header */}
+        <div style={{ paddingTop: "80px" }}>
+          {/* title + excerpt inputs */}
+                {/* title + excerpt inputs */}
+          <div style={{ marginBottom: "2rem" }}>
+            <input
+              type="text"
+              placeholder="Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              style={{
+                width: "100%",
+                border: "none",
+                outline: "none",
+                fontSize: "2.75rem",
+                fontWeight: 700,
+                marginBottom: "0.5rem",
+                fontFamily: "Charter, Georgia, 'Times New Roman', serif",
+                letterSpacing: "-0.02em",
+                color: "#242424",
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Short excerpt"
+              value={excerpt}
+              onChange={(e) => setExcerpt(e.target.value)}
+              style={{
+                width: "100%",
+                border: "none",
+                outline: "none",
+                fontSize: "1.25rem",
+                fontFamily: "Charter, Georgia, 'Times New Roman', serif",
+                color: "#6B6B6B",
+                lineHeight: 1.5,
+              }}
+            />
+          </div>
 
-        {/* title + excerpt inputs */}
-        <div style={{ marginBottom: "1rem" }}>
-          <input
-            type="text"
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+
+          {/* main content editor */}
+                    {/* main content editor */}
+          <div
+            ref={editorRef}
+            contentEditable
+            suppressContentEditableWarning
             style={{
-              width: "100%",
-              border: "none",
+              minHeight: "60vh",
               outline: "none",
-              fontSize: "2.5rem",
-              fontWeight: 500,
-              marginBottom: "0.5rem",
+              fontSize: "1.25rem",
+              lineHeight: 1.75,
+              fontFamily: "Charter, Georgia, 'Times New Roman', serif",
+              color: "#242424",
+              letterSpacing: "-0.003em",
             }}
           />
-          <input
-            type="text"
-            placeholder="Short excerpt"
-            value={excerpt}
-            onChange={(e) => setExcerpt(e.target.value)}
-            style={{
-              width: "100%",
-              border: "none",
-              outline: "none",
-              fontSize: "1rem",
-              color: "#666",
-            }}
-          />
-        </div>
 
-        {/* main content editor */}
-        <div
-          ref={editorRef}
-          contentEditable
-          suppressContentEditableWarning
-          dangerouslySetInnerHTML={{ __html: props.initialContent || "" }}
-          style={{
-            minHeight: "50vh",
-            outline: "none",
-            fontSize: "1.1rem",
-            lineHeight: 1.7,
-          }}
-        />
+        </div>
       </form>
 
-      {/* small inline link dialog */}
+      {/* Fixed COMPACT formatting toolbar at BOTTOM - GREY BACKGROUND */}
+           {/* Fixed COMPACT formatting toolbar at BOTTOM - MUCH SMALLER */}
+           {/* SUPER COMPACT toolbar at bottom */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: "2rem",
+          left: "50%",
+          transform: "translateX(-50%)",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "2px",
+          padding: "6px 10px",
+          borderRadius: 20,
+          background: "#f5f5f5",
+          border: "1px solid #e0e0e0",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+          zIndex: 50,
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => applyCommand("bold")}
+          style={{
+            border: "none",
+            background: "transparent",
+            color: "#333",
+            cursor: "pointer",
+            fontSize: "14px",
+            padding: "5px 10px",
+            borderRadius: 4,
+          }}
+          title="Bold"
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#e8e8e8")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          <strong>B</strong>
+        </button>
+        <button
+          type="button"
+          onClick={() => applyCommand("italic")}
+          style={{
+            border: "none",
+            background: "transparent",
+            color: "#333",
+            cursor: "pointer",
+            fontSize: "14px",
+            padding: "5px 10px",
+            borderRadius: 4,
+          }}
+          title="Italic"
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#e8e8e8")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          <em>i</em>
+        </button>
+        <button
+          type="button"
+          onClick={openLinkDialog}
+          style={{
+            border: "none",
+            background: "transparent",
+            color: "#333",
+            cursor: "pointer",
+            fontSize: "14px",
+            padding: "5px 10px",
+            borderRadius: 4,
+          }}
+          title="Insert link"
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#e8e8e8")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          🔗
+        </button>
+        <button
+          type="button"
+          onClick={toggleHeading}
+          style={{
+            border: "none",
+            background: "transparent",
+            color: "#333",
+            cursor: "pointer",
+            fontSize: "14px",
+            padding: "5px 10px",
+            borderRadius: 4,
+          }}
+          title="Big text"
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#e8e8e8")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          <strong>T</strong>
+        </button>
+        <button
+          type="button"
+          onClick={toggleBlockQuote}
+          style={{
+            border: "none",
+            background: "transparent",
+            color: "#333",
+            cursor: "pointer",
+            fontSize: "15px",
+            padding: "5px 10px",
+            borderRadius: 4,
+          }}
+          title="Quote"
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#e8e8e8")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          "
+        </button>
+        <button
+          type="button"
+          onClick={() => toggleInlineSpan("editor-comment")}
+          style={{
+            border: "none",
+            background: "transparent",
+            color: "#333",
+            cursor: "pointer",
+            fontSize: "14px",
+            padding: "5px 10px",
+            borderRadius: 4,
+          }}
+          title="Highlight"
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#e8e8e8")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          💬
+        </button>
+      </div>
+
+
+
+      {/* link dialog */}
       {showLinkDialog && (
         <div
           style={{
@@ -471,12 +601,13 @@ export default function Editor(props: EditorProps) {
             top: "20%",
             left: "50%",
             transform: "translateX(-50%)",
-            background: "#222",
-            color: "white",
+            background: "#fff",
+            color: "#333",
             padding: "1rem 1.25rem",
             borderRadius: 8,
-            boxShadow: "0 12px 30px rgba(0,0,0,0.35)",
-            zIndex: 50,
+            boxShadow: "0 12px 30px rgba(0,0,0,0.15)",
+            border: "1px solid #e0e0e0",
+            zIndex: 150,
             minWidth: 320,
           }}
         >
@@ -484,16 +615,17 @@ export default function Editor(props: EditorProps) {
             <div style={{ marginBottom: "0.5rem", fontWeight: 600 }}>
               Insert link
             </div>
-            <label style={{ fontSize: "0.85rem" }}>
+            <label style={{ fontSize: "0.85rem", display: "block", marginBottom: "0.5rem" }}>
               Text
               <input
                 type="text"
                 value={linkText}
                 onChange={(e) => setLinkText(e.target.value)}
                 style={linkInputStyle}
+                autoFocus
               />
             </label>
-            <label style={{ fontSize: "0.85rem" }}>
+            <label style={{ fontSize: "0.85rem", display: "block" }}>
               URL
               <input
                 type="url"
@@ -517,9 +649,9 @@ export default function Editor(props: EditorProps) {
                 style={{
                   padding: "0.25rem 0.75rem",
                   borderRadius: 16,
-                  border: "none",
-                  background: "#444",
-                  color: "white",
+                  border: "1px solid #ddd",
+                  background: "#fff",
+                  color: "#333",
                   cursor: "pointer",
                 }}
               >
@@ -544,6 +676,7 @@ export default function Editor(props: EditorProps) {
       )}
 
       {/* styles */}
+           {/* styles */}
       <style jsx global>{`
         blockquote {
           border-left: 3px solid #ddd;
@@ -551,13 +684,30 @@ export default function Editor(props: EditorProps) {
           padding-left: 1rem;
           font-style: italic;
           color: #555;
+          font-family: Charter, Georgia, 'Times New Roman', serif;
         }
         span.editor-comment {
           background: #e8f3ff;
           border-radius: 999px;
           padding: 0 0.3rem;
         }
+        h2 {
+          font-family: Charter, Georgia, 'Times New Roman', serif;
+          font-size: 2rem;
+          font-weight: 700;
+          line-height: 1.3;
+          margin: 1.5rem 0 1rem;
+          color: #242424;
+        }
+        p {
+          font-family: Charter, Georgia, 'Times New Roman', serif;
+          font-size: 1.25rem;
+          line-height: 1.75;
+          color: #242424;
+          margin-bottom: 1rem;
+        }
       `}</style>
-    </main>
+
+    </div>
   );
 }

@@ -5,6 +5,7 @@ import { authOptions } from "../api/auth/[...nextauth]/authOptions";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { formatDate } from "../../lib/formatDate";
+import DeletePostButton from "../../components/DeletePostButton";
 
 interface StoriesPageProps {
   searchParams: Promise<{ tab?: string }>;
@@ -98,8 +99,9 @@ export default async function StoriesPage({ searchParams }: StoriesPageProps) {
                     </div>
                   </div>
 
-                  {/* Right: Edit Icon */}
-                  <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  {/* Right: Edit & Delete Icons */}
+                  <div className="flex-shrink-0 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    {/* Edit Icon */}
                     <Link
                       href={`/editor/${post.slug}`}
                       className="relative group/edit flex flex-col items-center gap-1"
@@ -122,9 +124,17 @@ export default async function StoriesPage({ searchParams }: StoriesPageProps) {
                         </svg>
                       </div>
                       <span className="text-[11px] text-[#6B6B6B] whitespace-nowrap opacity-0 group-hover/edit:opacity-100 transition-opacity">
-                        Click to edit
+                        Edit
                       </span>
                     </Link>
+
+                    {/* Delete Icon */}
+                    <DeletePostButton
+                      postId={post.id}
+                      postTitle={post.title}
+                      variant="icon"
+                      redirectTo={`/stories?tab=${activeTab}`}
+                    />
                   </div>
                 </div>
               </article>
