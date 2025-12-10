@@ -17,7 +17,7 @@ export default async function ProfileRoute() {
     select: {
       id: true,
       name: true,
-      pronouns: true,
+      email: true,
       shortBio: true,
       about: true,
     },
@@ -27,5 +27,24 @@ export default async function ProfileRoute() {
     redirect("/login");
   }
 
-  return <ProfilePageClient user={user} />;
+  // Count published posts separately
+  const publishedPostsCount = await prisma.post.count({
+    where: {
+      authorId: user.id,
+      isPublished: true,
+    },
+  });
+
+  return (
+    <ProfilePageClient
+      user={{
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        shortBio: user.shortBio,
+        about: user.about,
+        publishedPostsCount,
+      }}
+    />
+  );
 }

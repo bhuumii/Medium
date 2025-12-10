@@ -30,15 +30,15 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
       where: { userId },
       include: {
         post: {
-          include: { 
+          include: {
             author: true,
             _count: {
-              select: { likes: true }
+              select: { likes: true },
             },
             likes: {
               where: { userId },
-              select: { id: true }
-            }
+              select: { id: true },
+            },
           },
         },
       },
@@ -48,22 +48,22 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     posts = likes.map((l) => ({
       ...l.post,
       isLiked: l.post.likes.length > 0,
-      likeCount: l.post._count.likes
+      likeCount: l.post._count.likes,
     }));
   } else {
     const bookmarks = await prisma.bookmark.findMany({
       where: { userId },
       include: {
         post: {
-          include: { 
+          include: {
             author: true,
             _count: {
-              select: { likes: true }
+              select: { likes: true },
             },
             likes: {
               where: { userId },
-              select: { id: true }
-            }
+              select: { id: true },
+            },
           },
         },
       },
@@ -73,7 +73,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     posts = bookmarks.map((b) => ({
       ...b.post,
       isLiked: b.post.likes.length > 0,
-      likeCount: b.post._count.likes
+      likeCount: b.post._count.likes,
     }));
   }
 
@@ -85,14 +85,29 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
   const savedPostIds = new Set(savedRows.map((row) => row.postId));
 
   return (
-    <main className="home-layout">
-      <section className="feed-header">
-        <div className="feed-tabs">
+    // 1. UPDATED: Expanded width to 1200px and added horizontal padding
+    <main 
+      className="home-layout w-full mx-auto px-6" 
+      style={{ maxWidth: '1200px' }}
+    >
+      {/* Reduced top padding slightly to match Home page style */}
+      <section className="feed-header" style={{ paddingTop: "10px" }}>
+        
+        {/* 2. UPDATED: Changed to text-left to align with the wider grid, removed massive bottom margin */}
+        <h1
+          className="text-[42px] font-bold text-[#242424] tracking-tight leading-tight mb-8 text-left"
+          style={{ marginTop: 0 }}
+        >
+          Library
+        </h1>
+
+        {/* 3. UPDATED: Added flex, gap, and increased font size to 18px */}
+        <div className="feed-tabs flex gap-8 border-b border-[#f2f2f2] mb-8">
           <a
             className={
               activeTab === "reading-list"
-                ? "feed-tab feed-tab--active no-underline"
-                : "feed-tab no-underline"
+                ? "feed-tab feed-tab--active no-underline pb-3 border-b-2 border-black font-medium text-[18px] text-black"
+                : "feed-tab no-underline pb-3 text-[#6B6B6B] hover:text-black transition-colors text-[18px]"
             }
             href="/library?tab=reading-list"
           >
@@ -101,8 +116,8 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
           <a
             className={
               activeTab === "liked"
-                ? "feed-tab feed-tab--active no-underline"
-                : "feed-tab no-underline"
+                ? "feed-tab feed-tab--active no-underline pb-3 border-b-2 border-black font-medium text-[18px] text-black"
+                : "feed-tab no-underline pb-3 text-[#6B6B6B] hover:text-black transition-colors text-[18px]"
             }
             href="/library?tab=liked"
           >
@@ -113,14 +128,13 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
 
       <section className="feed-list">
         {posts.length === 0 ? (
-          <p className="empty-feed">
+          <p className="empty-feed text-gray-500 mt-4">
             {activeTab === "liked"
               ? "No liked stories yet."
               : "No stories in your reading list yet."}
           </p>
         ) : (
           posts.map((post) => {
-            // ✅ Calculate read time (same as post page)
             const words = post.content.split(/\s+/).length;
             const minutes = Math.ceil(words / 200);
             const readTime = `${minutes} min read`;
@@ -130,7 +144,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
                 key={post.id}
                 post={{
                   ...post,
-                  readTime: readTime  // ✅ Pass calculated read time
+                  readTime,
                 }}
                 initialIsSaved={savedPostIds.has(post.id)}
               />

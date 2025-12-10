@@ -168,7 +168,7 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
             gap: '8px',
           }}
         >
-          <span>🔍</span>
+          
           <span>{mode === 'signin' ? 'Sign in with Google' : 'Sign up with Google'}</span>
         </button>
 

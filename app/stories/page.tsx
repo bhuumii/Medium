@@ -34,31 +34,57 @@ export default async function StoriesPage({ searchParams }: StoriesPageProps) {
   const activeList = activeTab === "drafts" ? drafts : published;
 
   return (
-    <main className="home-layout">
-      {/* Header with tabs */}
-      <section className="feed-header">
-        <h1 className="text-[42px] font-bold text-[#242424] tracking-tight leading-tight mb-10">
+    // 1. UPDATED: Added 'home-layout' and matched max-width/padding to Library page
+    <main 
+      className="home-layout w-full mx-auto px-6" 
+      style={{ maxWidth: '1200px' }}
+    >
+      {/* 2. UPDATED: Matched paddingTop (10px) to Library header */}
+      <section className="feed-header" style={{ paddingTop: "10px" }}>
+        
+        {/* Title: Matches Library typography and spacing */}
+        <h1 
+          className="text-[42px] font-bold text-[#242424] tracking-tight leading-tight mb-8 text-left" 
+          style={{ marginTop: 0 }}
+        >
           Stories
         </h1>
-        <div className="feed-tabs">
+
+        {/* 3. UPDATED: Tabs container - Flex, gap-8, and bottom border like Library */}
+        <div className="feed-tabs flex gap-8 border-b border-[#f2f2f2] mb-8">
+          
+          {/* Drafts Tab */}
           <Link 
             href="/stories?tab=drafts"
-            className={`feed-tab no-underline ${activeTab === "drafts" ? "feed-tab--active" : ""}`}
+            className={
+              activeTab === "drafts"
+                ? "feed-tab feed-tab--active no-underline pb-3 border-b-2 border-black font-medium text-[18px] text-black"
+                : "feed-tab no-underline pb-3 text-[#6B6B6B] hover:text-black transition-colors text-[18px]"
+            }
           >
-            Drafts {drafts.length > 0 && <span className="ml-1.5 text-[#6B6B6B] text-[13px]">{drafts.length}</span>}
+
+            Drafts {drafts.length > 0 && <span className="text-[13px] opacity-70" style={{ marginLeft: "5px" }}>{drafts.length}</span>}
           </Link>
+
+          {/* Published Tab */}
           <Link 
             href="/stories?tab=published"
-            className={`feed-tab no-underline ${activeTab === "published" ? "feed-tab--active" : ""}`}
+            className={
+              activeTab === "published"
+                ? "feed-tab feed-tab--active no-underline pb-3 border-b-2 border-black font-medium text-[18px] text-black"
+                : "feed-tab no-underline pb-3 text-[#6B6B6B] hover:text-black transition-colors text-[18px]"
+            }
           >
-            Published {published.length > 0 && <span className="ml-1.5 text-[#6B6B6B] text-[13px]">{published.length}</span>}
+       
+           Published {published.length > 0 && <span className="text-[13px] opacity-70" style={{ marginLeft: "5px" }}>{published.length}</span>}
           </Link>
         </div>
       </section>
 
+      {/* Content List */}
       <section className="feed-list">
         {activeList.length === 0 ? (
-          <p className="empty-feed">
+          <p className="empty-feed text-gray-500 mt-4">
             {activeTab === "drafts" 
               ? "You have no drafts." 
               : "You haven't published any stories yet."}

@@ -41,6 +41,9 @@ export default function Editor(props: EditorProps) {
   const [excerpt, setExcerpt] = useState(props.initialExcerpt || "");
   const [isSaving, setIsSaving] = useState(false);
 
+  const [lastSaved, setLastSaved] = useState<string>("");   // NEW
+  const [autoSaving, setAutoSaving] = useState(false);      // NEW
+
   // HTML will live inside this contentEditable div
   const editorRef = useRef<HTMLDivElement | null>(null);
 
@@ -56,6 +59,83 @@ export default function Editor(props: EditorProps) {
       editorRef.current.innerHTML = props.initialContent;
     }
   }, [props.initialContent]);
+
+  // ------- NEW: auto-save draft helper -------
+  async function autoSaveDraft() {
+    if (autoSaving) return;
+
+    const contentHtml = editorRef.current?.innerHTML ?? "";
+    const currentContent = title + excerpt + contentHtml;
+
+    // only save if there is a title and content changed
+    if (!title.trim() || currentContent === lastSaved) return;
+
+    setAutoSaving(true);
+
+    try {
+      if (props.postId) {
+        // Update existing post as draft
+        await fetch(`/api/posts/${props.postId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title,
+            excerpt,
+            content: contentHtml,
+            isPublished: false,
+          }),
+        });
+      } else {
+        // Create new draft
+        const res = await fetch("/api/posts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title,
+            excerpt,
+            content: contentHtml,
+            isPublished: false,
+          }),
+        });
+
+        if (res.ok) {
+          const newPost = await res.json();
+          // Move editor into edit mode for this draft
+          window.history.replaceState({}, "", `/editor/${newPost.slug}`);
+        }
+      }
+
+      setLastSaved(currentContent);
+    } catch (err) {
+      console.error("Auto-save failed:", err);
+    } finally {
+      setAutoSaving(false);
+    }
+  }
+
+  // ------- NEW: auto-save every 30s -------
+  useEffect(() => {
+    const interval = setInterval(() => {
+      autoSaveDraft();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [title, excerpt, lastSaved, autoSaving]);
+
+  // ------- NEW: save on window close -------
+useEffect(() => {
+  const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    const contentHtml = editorRef.current?.innerHTML ?? "";
+    const currentContent = title + excerpt + contentHtml;
+    if (title.trim() && currentContent !== lastSaved) {
+      e.preventDefault();
+      e.returnValue = "";
+    }
+  };
+
+  window.addEventListener("beforeunload", handleBeforeUnload);
+  return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+}, [title, excerpt, lastSaved]);
 
   /* ---------------- toolbar helpers ---------------- */
 
@@ -184,6 +264,35 @@ export default function Editor(props: EditorProps) {
     setLinkUrl("");
     setShowLinkDialog(true);
   }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+  if (typeof window === "undefined") return;
+
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return;
+
+  const range = sel.getRangeAt(0);
+  const node = range.commonAncestorContainer;
+  const element = node instanceof HTMLElement ? node : node.parentElement;
+  
+  // Handle Backspace in blockquote
+  if (e.key === "Backspace") {
+    const blockquote = element?.closest("blockquote");
+    
+    if (blockquote) {
+      // Check if cursor is at the start and blockquote is empty or nearly empty
+      const text = blockquote.textContent?.trim() || "";
+      const cursorAtStart = range.startOffset === 0;
+      
+      if (cursorAtStart || text === "") {
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "p");
+        return;
+      }
+    }
+  }
+}
+
 
   function handleLinkSubmit(e: FormEvent) {
     e.preventDefault();
@@ -352,30 +461,62 @@ export default function Editor(props: EditorProps) {
     <div className="editor-container" style={{ minHeight: "100vh", background: "#fff" }}>
       <form onSubmit={handlePublish} style={{ maxWidth: 800, margin: "0 auto", padding: "0 1.5rem", paddingBottom: "120px" }}>
         {/* Sticky top bar */}
-               <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "1rem 1.5rem",
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            background: "#fff",
-            zIndex: 100,
-            borderBottom: "1px solid #f0f0f0",
-          }}
-        >
-                  <div style={{ 
-            fontSize: "1.75rem", 
-            fontFamily: "var(--font-serif, Georgia, 'Times New Roman', serif)",
-            fontWeight: 400,
-            letterSpacing: "-0.02em",
-            color: "#000"
-          }}>
-            Medium
-          </div>
+        <div
+  style={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "1rem 1.5rem",
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    background: "#fff",
+    zIndex: 100,
+    borderBottom: "1px solid #f0f0f0",
+  }}
+>
+  {/* LEFT: logo + back underneath */}
+  <div style={{ display: "flex", flexDirection: "column" }}>
+    <div
+      style={{
+        fontSize: "1.75rem",
+        fontFamily: "var(--font-serif, Georgia, 'Times New Roman', serif)",
+        fontWeight: 400,
+        letterSpacing: "-0.02em",
+        color: "#000",
+        lineHeight: 1,
+      }}
+    >
+      Medium
+    </div>
+
+    <button
+      type="button"
+        onClick={async () => {
+    await autoSaveDraft();      // <— ensure draft save
+    router.push("/home");       // then go back
+  }}
+      style={{
+        marginTop: "4px",
+        border: "none",
+        background: "transparent",
+        cursor: "pointer",
+         color: "#000",        // solid black
+    fontSize: "1.1rem",   // slightly bigger
+    fontWeight: 700,   
+        alignSelf: "flex-start",
+      }}
+    >
+      {"< "}
+    </button>
+  </div>
+
+  {/* RIGHT: keep your existing buttons block here unchanged */}
+  <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+    {/* Save as Draft + Publish buttons as you already have */}
+  </div>
+
 
           
           {/* Buttons Container */}
@@ -443,20 +584,22 @@ export default function Editor(props: EditorProps) {
 
           {/* main content editor */}
                     {/* main content editor */}
-          <div
-            ref={editorRef}
-            contentEditable
-            suppressContentEditableWarning
-            style={{
-              minHeight: "60vh",
-              outline: "none",
-              fontSize: "1.25rem",
-              lineHeight: 1.75,
-              fontFamily: "Charter, Georgia, 'Times New Roman', serif",
-              color: "#242424",
-              letterSpacing: "-0.003em",
-            }}
-          />
+        <div
+  ref={editorRef}
+  contentEditable
+  suppressContentEditableWarning
+  onKeyDown={handleKeyDown}
+  style={{
+    minHeight: "60vh",
+    outline: "none",
+    fontSize: "1.25rem",
+    lineHeight: 1.75,
+    fontFamily: "Charter, Georgia, 'Times New Roman', serif",
+    color: "#242424",
+    letterSpacing: "-0.003em",
+  }}
+/>
+
 
         </div>
       </form>

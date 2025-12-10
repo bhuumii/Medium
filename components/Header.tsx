@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 type HeaderProps = {
   sidebarOpen: boolean;
@@ -13,15 +14,14 @@ type HeaderProps = {
 export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  
-  // Get session data
+  const [searchTerm, setSearchTerm] = useState("");
+  const router = useRouter();
+
   const { data: session } = useSession();
-  
-  // Get user name and avatar initial
+
   const userName = session?.user?.name || "User";
   const avatarInitial = userName.charAt(0).toUpperCase();
 
-  // Close avatar menu when clicking outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -32,9 +32,16 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  function handleSearchKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      const q = searchTerm.trim();
+      if (!q) return;
+      router.push(`/search?q=${encodeURIComponent(q)}`);
+    }
+  }
+
   return (
     <header className="site-header">
-      {/* LEFT: menu + logo + search */}
       <div className="site-header-left">
         <button
           type="button"
@@ -53,24 +60,49 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
         </Link>
 
         <div className="search-wrapper">
-          <span className="search-icon">🔍</span>
+          <span className="search-icon" aria-hidden="true">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ display: "block" }}
+    >
+      <circle
+        cx="11"
+        cy="11"
+        r="6"
+        stroke="#6B6B6B"
+        strokeWidth="1.7"
+      />
+      <line
+        x1="15"
+        y1="15"
+        x2="20"
+        y2="20"
+        stroke="#6B6B6B"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+    </svg>
+  </span>
           <input
-            className="search-input"
-            placeholder="Search"
-            type="text"
-          />
+    className="search-input"
+    placeholder="Search"
+    type="text"
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    onKeyDown={handleSearchKeyDown}
+  />
         </div>
       </div>
 
-      {/* RIGHT: write + avatar (NO BELL) */}
       <div className="site-header-right">
         <Link href="/editor" className="write-button">
           Write
         </Link>
 
-        {/* REMOVED NOTIFICATION BELL */}
-
-        {/* Avatar + dropdown menu */}
         <div className="avatar-menu-wrapper" ref={menuRef}>
           <button
             type="button"
@@ -84,13 +116,11 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
 
           {menuOpen && (
             <div className="avatar-menu">
-              {/* Top card: avatar + name */}
               <div className="avatar-menu-header">
                 <div className="avatar-menu-circle">{avatarInitial}</div>
                 <div className="avatar-menu-name">{userName}</div>
               </div>
 
-              {/* Options list */}
               <div className="avatar-menu-list">
                 <Link href="/profile" className="avatar-menu-item">
                   View / Edit profile

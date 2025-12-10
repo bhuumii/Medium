@@ -18,7 +18,7 @@ export async function GET() {
       select: {
         id: true,
         name: true,
-        pronouns: true,
+        email: true,
         shortBio: true,
         about: true,
       },
@@ -48,9 +48,8 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { name, pronouns, shortBio, about } = body as {
+    const { name, shortBio, about } = body as {
       name?: string;
-      pronouns?: string;
       shortBio?: string;
       about?: string;
     };
@@ -59,14 +58,13 @@ export async function POST(req: Request) {
       where: { id: session.user.id },
       data: {
         ...(name !== undefined && { name }),
-        ...(pronouns !== undefined && { pronouns }),
         ...(shortBio !== undefined && { shortBio }),
         ...(about !== undefined && { about }),
       },
       select: {
         id: true,
         name: true,
-        pronouns: true,
+        email: true,
         shortBio: true,
         about: true,
       },

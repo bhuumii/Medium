@@ -2,13 +2,16 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 type User = {
   id: string;
   name: string | null;
-  pronouns: string | null;
+  email: string | null;
   shortBio: string | null;
   about: string | null;
+  publishedPostsCount: number;
 };
 
 interface ProfilePageClientProps {
@@ -18,8 +21,29 @@ interface ProfilePageClientProps {
 export default function ProfilePageClient({ user }: ProfilePageClientProps) {
   const [mode, setMode] = useState<"summary" | "edit">("summary");
 
+  if (!user) {
+    return (
+      <div style={{ maxWidth: 700, margin: "0 auto", padding: "2rem 1rem", textAlign: "center" }}>
+        <p>Loading profile...</p>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ maxWidth: 700, margin: "0 auto", padding: "2rem 1rem" }}>
+    // 1. Added 'home-layout' class to match Library page spacing
+    // 2. Kept maxWidth 1200px and w-full/px-6 for the wide layout
+    <div className="home-layout w-full mx-auto px-6" style={{ maxWidth: '1200px' }}>
+      
+      {/* 3. Replicated 'feed-header' with paddingTop: '10px' to match Library exactly */}
+      <div className="feed-header" style={{ paddingTop: "10px", paddingBottom: 0 }}>
+        <h1
+          className="text-[42px] font-bold text-[#242424] tracking-tight leading-tight mb-8 text-left"
+          style={{ marginTop: 0 }}
+        >
+          Your Profile
+        </h1>
+      </div>
+
       {mode === "summary" ? (
         <AboutSummary user={user} onEdit={() => setMode("edit")} />
       ) : (
@@ -38,59 +62,117 @@ function AboutSummary({
   user: User;
   onEdit: () => void;
 }) {
-  const initial = (user.name || "U").charAt(0).toUpperCase();
+  if (!user) return null;
+
+  const userName = user.name || "U";
+  const initial = userName.charAt(0).toUpperCase();
 
   return (
     <section>
       {/* Avatar + name + short bio */}
-      <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", marginBottom: "1.5rem" }}>
         <div
           style={{
-            width: 72,
-            height: 72,
+            width: 88,
+            height: 88,
             borderRadius: "50%",
             backgroundColor: "#c63d0f",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "2rem",
+            fontSize: "2.5rem",
             color: "white",
             fontWeight: 600,
+            flexShrink: 0 // Prevent avatar from squishing
           }}
         >
           {initial}
         </div>
-        <div>
-          <div style={{ fontWeight: 600, fontSize: "1.1rem" }}>
-            {user.name || "Your name"}
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 600, fontSize: "1.5rem", marginBottom: "0.25rem" }}>
+            {userName}
           </div>
-          <div style={{ color: "#555", marginTop: "0.25rem" }}>
+          <div style={{ color: "#6B7280", fontSize: "0.95rem" }}>
             {user.shortBio || "Add a short bio…"}
           </div>
         </div>
       </div>
 
-      {/* Edit link */}
+      {/* Edit profile button */}
       <button
         type="button"
         onClick={onEdit}
         style={{
-          marginTop: "1rem",
-          padding: 0,
-          border: "none",
-          background: "none",
+          marginBottom: "2rem",
+          padding: "8px 16px",
+          border: "1px solid #1a8917",
+          background: "white",
           color: "#1a8917",
           cursor: "pointer",
           fontSize: "0.95rem",
+          borderRadius: "99px",
+          fontWeight: 500,
+          transition: "all 0.2s",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#f0fdf0";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "white";
         }}
       >
         Edit profile
       </button>
 
-      {/* Full about text (optional) */}
+      {/* Published Articles Card - Clickable - Single Centered */}
+      <Link
+        href="/stories?tab=published"
+        style={{
+          display: "block",
+          padding: "1.5rem",
+          backgroundColor: "#F9FAFB",
+          borderRadius: "8px",
+          border: "1px solid #E5E7EB",
+          textDecoration: "none",
+          transition: "all 0.2s",
+          cursor: "pointer",
+          marginBottom: "2rem",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#F3F4F6";
+          e.currentTarget.style.borderColor = "#D1D5DB";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "#F9FAFB";
+          e.currentTarget.style.borderColor = "#E5E7EB";
+        }}
+      >
+        <div style={{ fontSize: "2.5rem", fontWeight: 700, color: "#000000", marginBottom: "0.25rem", textAlign: "center" }}>
+          {user.publishedPostsCount || 0}
+        </div>
+        <div style={{ fontSize: "1rem", color: "#6B7280", fontWeight: 500, textAlign: "center" }}>
+          Published {user.publishedPostsCount === 1 ? "Article" : "Articles"}
+        </div>
+      </Link>
+
+      {/* Divider */}
+      <div style={{ borderTop: "1px solid #E5E7EB", marginBottom: "2rem" }} />
+
+      {/* Full about text */}
       {user.about && (
-        <div style={{ marginTop: "2rem", whiteSpace: "pre-wrap" }}>
-          {user.about}
+        <div>
+          <h3 style={{ fontSize: "1.25rem", fontWeight: 600, marginBottom: "1rem", color: "#111827" }}>
+            About
+          </h3>
+          <div style={{ whiteSpace: "pre-wrap", lineHeight: "1.6", color: "#374151" }}>
+            {user.about}
+          </div>
+        </div>
+      )}
+
+      {!user.about && (
+        <div style={{ color: "#9CA3AF", fontStyle: "italic" }}>
+          No bio added yet. Click "Edit profile" to add your about section.
         </div>
       )}
     </section>
@@ -106,8 +188,10 @@ function EditProfileForm({
   user: User;
   onDone: () => void;
 }) {
+  if (!user) return null;
+
+  const router = useRouter();
   const [name, setName] = useState(user.name ?? "");
-  const [pronouns, setPronouns] = useState(user.pronouns ?? "");
   const [shortBio, setShortBio] = useState(user.shortBio ?? "");
   const [about, setAbout] = useState(user.about ?? "");
 
@@ -124,9 +208,7 @@ function EditProfileForm({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: user.id,
           name,
-          pronouns,
           shortBio,
           about,
         }),
@@ -137,7 +219,13 @@ function EditProfileForm({
       }
 
       setStatus("saved");
-      onDone();
+      
+      // Refresh the page data
+      router.refresh();
+      
+      setTimeout(() => {
+        onDone();
+      }, 1000);
     } catch (err) {
       console.error(err);
       setStatus("error");
@@ -146,74 +234,154 @@ function EditProfileForm({
 
   return (
     <form onSubmit={handleSubmit}>
+      <h2 style={{ fontSize: "1.5rem", fontWeight: 600, marginBottom: "1.5rem" }}>
+        Edit Profile
+      </h2>
+
+      {/* Email (Read-only) */}
+      <label style={{ display: "block", marginBottom: "1.5rem" }}>
+        <div style={{ marginBottom: "0.5rem", fontWeight: 500, color: "#374151" }}>
+          Email
+        </div>
+        <input
+          value={user.email || ""}
+          readOnly
+          disabled
+          style={{
+            width: "100%",
+            padding: "0.75rem",
+            backgroundColor: "#F3F4F6",
+            border: "1px solid #D1D5DB",
+            borderRadius: "6px",
+            fontSize: "0.95rem",
+            color: "#6B7280",
+            cursor: "not-allowed",
+          }}
+        />
+        <div style={{ fontSize: "0.8rem", color: "#9CA3AF", marginTop: "0.25rem" }}>
+          Email cannot be changed
+        </div>
+      </label>
+
       {/* Name */}
-      <label style={{ display: "block", marginBottom: "1.25rem" }}>
-        <div style={{ marginBottom: "0.25rem" }}>Name</div>
+      <label style={{ display: "block", marginBottom: "1.5rem" }}>
+        <div style={{ marginBottom: "0.5rem", fontWeight: 500, color: "#374151" }}>
+          Name *
+        </div>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={50}
-          style={{ width: "100%", padding: "0.4rem" }}
+          required
+          style={{
+            width: "100%",
+            padding: "0.75rem",
+            border: "1px solid #D1D5DB",
+            borderRadius: "6px",
+            fontSize: "0.95rem",
+          }}
         />
-        <div style={{ fontSize: "0.8rem", color: "#666", marginTop: "0.15rem" }}>
+        <div style={{ fontSize: "0.8rem", color: "#6B7280", marginTop: "0.25rem" }}>
           {name.length}/50
         </div>
       </label>
 
-      {/* Pronouns */}
-      <label style={{ display: "block", marginBottom: "1.25rem" }}>
-        <div style={{ marginBottom: "0.25rem" }}>Pronouns</div>
-        <input
-          value={pronouns}
-          onChange={(e) => setPronouns(e.target.value)}
-          maxLength={4}
-          style={{ width: "100%", padding: "0.4rem" }}
-        />
-        <div style={{ fontSize: "0.8rem", color: "#666", marginTop: "0.15rem" }}>
-          {pronouns.length}/4
-        </div>
-      </label>
-
       {/* Short bio */}
-      <label style={{ display: "block", marginBottom: "1.25rem" }}>
-        <div style={{ marginBottom: "0.25rem" }}>Short bio</div>
+      <label style={{ display: "block", marginBottom: "1.5rem" }}>
+        <div style={{ marginBottom: "0.5rem", fontWeight: 500, color: "#374151" }}>
+          Short bio
+        </div>
         <textarea
           value={shortBio}
           onChange={(e) => setShortBio(e.target.value)}
           maxLength={160}
           rows={3}
-          style={{ width: "100%", padding: "0.4rem" }}
+          placeholder="Tell readers about yourself in one line..."
+          style={{
+            width: "100%",
+            padding: "0.75rem",
+            border: "1px solid #D1D5DB",
+            borderRadius: "6px",
+            fontSize: "0.95rem",
+            fontFamily: "inherit",
+            resize: "vertical",
+          }}
         />
-        <div style={{ fontSize: "0.8rem", color: "#666", marginTop: "0.15rem" }}>
+        <div style={{ fontSize: "0.8rem", color: "#6B7280", marginTop: "0.25rem" }}>
           {shortBio.length}/160
         </div>
       </label>
 
       {/* About page */}
-      <label style={{ display: "block", marginBottom: "1.25rem" }}>
-        <div style={{ marginBottom: "0.25rem" }}>About page</div>
+      <label style={{ display: "block", marginBottom: "1.5rem" }}>
+        <div style={{ marginBottom: "0.5rem", fontWeight: 500, color: "#374151" }}>
+          About
+        </div>
         <textarea
           value={about}
           onChange={(e) => setAbout(e.target.value)}
-          rows={6}
-          style={{ width: "100%", padding: "0.4rem" }}
+          rows={8}
+          placeholder="Tell your story. What do you write about? What are your interests?"
+          style={{
+            width: "100%",
+            padding: "0.75rem",
+            border: "1px solid #D1D5DB",
+            borderRadius: "6px",
+            fontSize: "0.95rem",
+            fontFamily: "inherit",
+            resize: "vertical",
+            lineHeight: "1.6",
+          }}
         />
       </label>
 
-      <button type="submit" disabled={status === "saving"}>
-        {status === "saving" ? "Saving..." : "Save"}
-      </button>
+      <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+        <button
+          type="submit"
+          disabled={status === "saving"}
+          style={{
+            padding: "10px 24px",
+            backgroundColor: "#1a8917",
+            color: "white",
+            border: "none",
+            borderRadius: "99px",
+            fontSize: "0.95rem",
+            fontWeight: 500,
+            cursor: status === "saving" ? "not-allowed" : "pointer",
+            opacity: status === "saving" ? 0.7 : 1,
+          }}
+        >
+          {status === "saving" ? "Saving..." : "Save"}
+        </button>
 
-      {status === "saved" && (
-        <span style={{ marginLeft: "0.75rem", color: "#1a8917" }}>
-          Profile saved
-        </span>
-      )}
-      {status === "error" && (
-        <span style={{ marginLeft: "0.75rem", color: "red" }}>
-          Failed to save
-        </span>
-      )}
+        <button
+          type="button"
+          onClick={onDone}
+          style={{
+            padding: "10px 24px",
+            backgroundColor: "white",
+            color: "#374151",
+            border: "1px solid #D1D5DB",
+            borderRadius: "99px",
+            fontSize: "0.95rem",
+            fontWeight: 500,
+            cursor: "pointer",
+          }}
+        >
+          Cancel
+        </button>
+
+        {status === "saved" && (
+          <span style={{ color: "#1a8917", fontSize: "0.9rem", fontWeight: 500 }}>
+            ✓ Profile saved
+          </span>
+        )}
+        {status === "error" && (
+          <span style={{ color: "#DC2626", fontSize: "0.9rem", fontWeight: 500 }}>
+            Failed to save
+          </span>
+        )}
+      </div>
     </form>
   );
 }
