@@ -49,15 +49,13 @@ export default async function UserProfilePage({ params }: Props) {
         <div>
           <h1 className="text-3xl font-bold mb-1">{user.name}</h1>
 
-          {user.bio && (
+          {user.shortBio && (
             <p className="text-sm text-[#6b6b6b] mb-1">
-              {user.bio}
+              {user.shortBio}
             </p>
           )}
 
-          <p className="text-xs text-[#6b6b6b]">
-            Joined {formatDate(user.createdAt)}
-          </p>
+        
         </div>
       </header>
 
