@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { useState, MouseEvent } from "react";
 import { formatDate } from "../lib/formatDate";
+import LikeButton from "./LikeButton";
 
 type PostCardProps = {
   post: {
@@ -16,21 +17,22 @@ type PostCardProps = {
     author?: {
       name: string | null;
     } | null;
+    isLiked: boolean;
+    likeCount: number;
+    readTime: string;  // ✅ ADD THIS
   };
-  // whether this post is saved for the current user (from the server)
   initialIsSaved: boolean;
 };
 
 export default function PostCard({ post, initialIsSaved }: PostCardProps) {
   const authorName = post.author?.name ?? "Unknown";
   const date = formatDate(post.createdAt);
-  const readTime = "1 min read";
+  const readTime = post.readTime;  // ✅ USE FROM PROP
 
   const [isSaved, setIsSaved] = useState<boolean>(initialIsSaved);
   const [saving, setSaving] = useState(false);
 
   async function handleToggleSave(e: MouseEvent<HTMLButtonElement>) {
-    // don’t navigate to the post when clicking the bookmark
     e.preventDefault();
     e.stopPropagation();
 
@@ -52,7 +54,6 @@ export default function PostCard({ post, initialIsSaved }: PostCardProps) {
       setIsSaved(data.saved);
     } catch (err) {
       console.error(err);
-      // optional: show toast/snackbar later
     } finally {
       setSaving(false);
     }
@@ -63,8 +64,7 @@ export default function PostCard({ post, initialIsSaved }: PostCardProps) {
   return (
     <article className="post-card">
       <Link href={`/posts/${post.slug}`} className="post-card__inner">
-        {/* LEFT SIDE: text */}
-        <div className="post-card__text">
+        <div className="post-card__text" style={{ width: '100%' }}>
           <div className="post-card__meta">
             <span>{authorName}</span>
             <span className="dot">·</span>
@@ -79,8 +79,22 @@ export default function PostCard({ post, initialIsSaved }: PostCardProps) {
             <p className="post-card__excerpt">{post.excerpt}</p>
           )}
 
-          <div className="post-card__footer">
-            {/* Bookmark button instead of “Save” text */}
+          <div 
+            className="post-card__footer"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              marginTop: '8px'
+            }}
+          >
+            <LikeButton
+              postId={post.id}
+              initialLiked={post.isLiked}
+              initialLikeCount={post.likeCount}
+              size="small"
+            />
+
             <button
               type="button"
               className={`post-card__bookmark ${isSaved ? "post-card__bookmark--saved" : ""}`}
@@ -88,8 +102,13 @@ export default function PostCard({ post, initialIsSaved }: PostCardProps) {
               aria-label={tooltip}
               title={tooltip}
               disabled={saving}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: saving ? 'not-allowed' : 'pointer',
+                padding: '4px',
+              }}
             >
-              {/* Simple bookmark SVG (outline vs filled) */}
               <svg
                 width="20"
                 height="20"
@@ -107,9 +126,6 @@ export default function PostCard({ post, initialIsSaved }: PostCardProps) {
             </button>
           </div>
         </div>
-
-        {/* RIGHT SIDE: thumbnail placeholder (like Medium’s image) */}
-        <div className="post-card__thumb" />
       </Link>
     </article>
   );

@@ -24,9 +24,8 @@ model User {
   pronouns      String?
   shortBio      String?
   about         String?
-
-  // NEW: saved posts
   bookmarks     Bookmark[]
+  likes         Like[]  
 }
 
 model Account {
@@ -83,13 +82,10 @@ model Post {
   authorId String
   author   User @relation(fields: [authorId], references: [id])
 
-  // NEW: who saved this post
   bookmarks Bookmark[]
+  likes     Like[]       // ADD THIS LINE
 }
 
-
-
-// NEW MODEL: one row = one saved post by one user
 model Bookmark {
   id        String   @id @default(cuid())
   userId    String
@@ -99,6 +95,18 @@ model Bookmark {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  // a user can save a post only once
   @@unique([userId, postId])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
 }

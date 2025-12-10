@@ -10,6 +10,7 @@ import PostBookmarkButton from "../../../components/PostBookmarkButton";
 import DeletePostButtonInline from "../../../components/DeletePostButtonInline";
 import PublishPostButton from "../../../components/PublishPostButton";
 import EditPostButton from "../../../components/EditPostButton";
+import LikeButton from "../../../components/LikeButton";  // ✅ ADD THIS
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -48,7 +49,16 @@ export default async function PostPage({ params }: Props) {
 
   const post = await prisma.post.findUnique({
     where: { slug },
-    include: { author: true },
+    include: { 
+      author: true,
+      _count: {
+        select: { likes: true }  // ✅ Count total likes
+      },
+      likes: session?.user?.id ? {
+        where: { userId: session.user.id },  // ✅ Check if current user liked it
+        select: { id: true }
+      } : false
+    },
   });
 
   if (!post) return notFound();
@@ -68,6 +78,10 @@ export default async function PostPage({ params }: Props) {
     });
     initialIsSaved = !!bookmark;
   }
+
+  // ✅ Like data
+  const isLiked = post.likes && Array.isArray(post.likes) ? post.likes.length > 0 : false;
+  const likeCount = post._count.likes;
 
   const authorName = post.author?.name ?? "Unknown";
 
@@ -96,7 +110,7 @@ export default async function PostPage({ params }: Props) {
               alignItems: 'center', 
               justifyContent: 'flex-end', 
               marginBottom: '2rem',
-              gap: '12px' // Gap between buttons
+              gap: '12px'
             }}>
               {/* Publish Button - Only for Drafts */}
               {!post.isPublished && (
@@ -127,7 +141,7 @@ export default async function PostPage({ params }: Props) {
               color: '#242424',
               lineHeight: '1.2',
               letterSpacing: '-0.02em',
-              marginBottom: '8px' // Reduced space to excerpt
+              marginBottom: '8px'
             }}
           >
             {post.title}
@@ -198,14 +212,24 @@ export default async function PostPage({ params }: Props) {
               </div>
             </div>
 
-            {/* Right: Bookmark Button */}
+            {/* ✅ Right: Like + Bookmark Buttons */}
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
+              gap: '12px',
               borderLeft: '1px solid #e5e5e5', 
               paddingLeft: '16px', 
               height: '32px' 
             }}>
+              {/* Like Button */}
+              <LikeButton
+                postId={post.id}
+                initialLiked={isLiked}
+                initialLikeCount={likeCount}
+                size="small"
+              />
+
+              {/* Bookmark Button */}
               <PostBookmarkButton
                 postId={post.id}
                 initialIsSaved={initialIsSaved}
@@ -222,8 +246,6 @@ export default async function PostPage({ params }: Props) {
           }} />
 
         </header>
-
-
 
         {/* --- CONTENT --- */}
         <div className="prose prose-lg max-w-none text-left mt-10">

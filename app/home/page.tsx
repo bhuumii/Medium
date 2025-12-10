@@ -12,7 +12,6 @@ type HomePageProps = {
 };
 
 export default async function HomeSignedIn({ searchParams }: HomePageProps) {
-  // 1) Protect route – only logged-in users
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?.id) {
@@ -21,30 +20,36 @@ export default async function HomeSignedIn({ searchParams }: HomePageProps) {
 
   const userId = session.user.id;
 
-  // Next.js 15: searchParams is a Promise
   const resolved = await searchParams;
   const activeTab = resolved.tab === "by-you" ? "by-you" : "for-you";
 
-  // 2) Fetch posts depending on tab - ONLY PUBLISHED POSTS
   const where =
     activeTab === "by-you"
       ? { 
           authorId: userId,
-          isPublished: true  // ✅ Only show published posts in "By You"
+          isPublished: true
         }
       : { 
           authorId: { not: userId },
-          isPublished: true  // ✅ Only show published posts in "For You"
+          isPublished: true
         };
 
   const posts = await prisma.post.findMany({
     where,
-    include: { author: true },
+    include: { 
+      author: true,
+      _count: {
+        select: { likes: true }
+      },
+      likes: {
+        where: { userId },
+        select: { id: true }
+      }
+    },
     orderBy: { createdAt: "desc" },
     take: 20,
   });
 
-  // 3) Fetch bookmarks for this user so we can mark saved posts
   const savedRows = await prisma.bookmark.findMany({
     where: { userId },
     select: { postId: true },
@@ -56,7 +61,6 @@ export default async function HomeSignedIn({ searchParams }: HomePageProps) {
 
   return (
     <main className="home-layout">
-      {/* Tabs like Medium: For you / By you */}
       <section className="feed-header">
         <div className="feed-tabs">
           <a
@@ -82,15 +86,26 @@ export default async function HomeSignedIn({ searchParams }: HomePageProps) {
         </div>
       </section>
 
-      {/* Posts list */}
       <section className="feed-list">
-        {posts.map((post) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            initialIsSaved={savedPostIds.has(post.id)}
-          />
-        ))}
+        {posts.map((post) => {
+          // ✅ Calculate read time (same as post page)
+          const words = post.content.split(/\s+/).length;
+          const minutes = Math.ceil(words / 200);
+          const readTime = `${minutes} min read`;
+
+          return (
+            <PostCard
+              key={post.id}
+              post={{
+                ...post,
+                isLiked: post.likes.length > 0,
+                likeCount: post._count.likes,
+                readTime: readTime  // ✅ Pass calculated read time
+              }}
+              initialIsSaved={savedPostIds.has(post.id)}
+            />
+          );
+        })}
 
         {posts.length === 0 && (
           <p className="empty-feed">
