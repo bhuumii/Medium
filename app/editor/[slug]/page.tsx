@@ -1,4 +1,3 @@
-// app/editor/[slug]/page.tsx
 import { prisma } from "../../../lib/prisma";
 import { notFound } from "next/navigation";
 import Editor from "../../../components/Editor";
@@ -8,7 +7,7 @@ interface Props {
 }
 
 export default async function EditPostPage({ params }: Props) {
-  // Await params first
+ 
   const resolved = await params;
   const slug = resolved.slug;
 
@@ -18,7 +17,7 @@ export default async function EditPostPage({ params }: Props) {
 
   if (!post) return notFound();
 
-  // Pass existing data to your Editor component
+
   return (
     <Editor
       initialTitle={post.title}

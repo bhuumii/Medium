@@ -1,4 +1,3 @@
-// components/Sidebar.tsx
 "use client";
 
 import Link from "next/link";
@@ -14,7 +13,7 @@ const items = [
 export default function Sidebar({ open }: { open: boolean }) {
   const pathname = usePathname();
 
-  // hide completely when not open
+
   if (!open) return null;
 
   return (

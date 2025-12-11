@@ -1,4 +1,3 @@
-// app/api/posts/[id]/like/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/authOptions';
@@ -6,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }  // ✅ params is a Promise
+  { params }: { params: Promise<{ id: string }> } 
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -23,7 +22,7 @@ export async function POST(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const { id: postId } = await params;  // ✅ Await params first!
+    const { id: postId } = await params;  
 
     // Check if post exists and is published
     const post = await prisma.post.findUnique({
@@ -71,7 +70,7 @@ export async function POST(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }  // ✅ params is a Promise
+  { params }: { params: Promise<{ id: string }> }  
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -88,9 +87,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const { id: postId } = await params;  // ✅ Await params first!
+    const { id: postId } = await params;  
 
-    // Delete like
+
     await prisma.like.deleteMany({
       where: {
         userId: user.id,

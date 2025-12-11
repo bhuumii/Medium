@@ -1,4 +1,3 @@
-// app/password/page.tsx
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
@@ -16,10 +15,10 @@ export default function ChangePasswordPage() {
     useState<"idle" | "saving" | "saved" | "error">("idle");
   const [errorText, setErrorText] = useState<string | null>(null);
 
-  // Check if user has password (not OAuth-only)
+
   const hasPassword = session?.user?.email && (session?.user as any)?.hasPassword !== false;
 
-  // If not logged in, send to home
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.replace("/");
@@ -58,7 +57,7 @@ export default function ChangePasswordPage() {
       setNewPassword("");
       setConfirmPassword("");
       
-      // Auto-hide success message after 3 seconds
+
       setTimeout(() => {
         setStatusMsg("idle");
       }, 3000);

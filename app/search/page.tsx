@@ -1,4 +1,3 @@
-// app/search/page.tsx
 import { prisma } from "../../lib/prisma";
 import PostCard from "../../components/PostCard";
 import { getServerSession } from "next-auth";

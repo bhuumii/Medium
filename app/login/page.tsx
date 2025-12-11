@@ -1,4 +1,3 @@
-// app/login/page.tsx
 'use client';
 
 import { useEffect } from 'react';
@@ -8,7 +7,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to home page where modal will handle login
+
     router.replace('/?login=true');
   }, [router]);
 

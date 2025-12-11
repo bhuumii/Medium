@@ -1,4 +1,3 @@
-// components/DeletePostButtonInline.tsx
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -39,7 +38,7 @@ export default function DeletePostButtonInline({
         return;
       }
 
-      // Success - redirect
+
       router.push(redirectTo);
       router.refresh();
     } catch (error) {

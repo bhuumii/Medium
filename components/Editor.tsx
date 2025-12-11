@@ -1,4 +1,3 @@
-// components/Editor.tsx
 "use client";
 
 import { FormEvent, useRef, useState, useEffect } from "react";
@@ -11,7 +10,7 @@ type EditorProps = {
   postId?: string;
 };
 
-// Define styles at the top level
+
 const toolbarButtonStyle: React.CSSProperties = {
   border: "none",
   background: "transparent",
@@ -41,33 +40,33 @@ export default function Editor(props: EditorProps) {
   const [excerpt, setExcerpt] = useState(props.initialExcerpt || "");
   const [isSaving, setIsSaving] = useState(false);
 
-  const [lastSaved, setLastSaved] = useState<string>("");   // NEW
-  const [autoSaving, setAutoSaving] = useState(false);      // NEW
+  const [lastSaved, setLastSaved] = useState<string>("");   
+  const [autoSaving, setAutoSaving] = useState(false);      
 
-  // HTML will live inside this contentEditable div
+ 
   const editorRef = useRef<HTMLDivElement | null>(null);
 
-  // --- link dialog state ---
+ 
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [linkText, setLinkText] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
   const savedRangeRef = useRef<Range | null>(null);
 
-  // Set initial content once when component mounts
+ 
   useEffect(() => {
     if (editorRef.current && props.initialContent && !editorRef.current.innerHTML) {
       editorRef.current.innerHTML = props.initialContent;
     }
   }, [props.initialContent]);
 
-  // ------- NEW: auto-save draft helper -------
+ 
   async function autoSaveDraft() {
     if (autoSaving) return;
 
     const contentHtml = editorRef.current?.innerHTML ?? "";
     const currentContent = title + excerpt + contentHtml;
 
-    // only save if there is a title and content changed
+  
     if (!title.trim() || currentContent === lastSaved) return;
 
     setAutoSaving(true);
@@ -100,7 +99,7 @@ export default function Editor(props: EditorProps) {
 
         if (res.ok) {
           const newPost = await res.json();
-          // Move editor into edit mode for this draft
+        
           window.history.replaceState({}, "", `/editor/${newPost.slug}`);
         }
       }
@@ -113,7 +112,7 @@ export default function Editor(props: EditorProps) {
     }
   }
 
-  // ------- NEW: auto-save every 30s -------
+
   useEffect(() => {
     const interval = setInterval(() => {
       autoSaveDraft();
@@ -122,7 +121,7 @@ export default function Editor(props: EditorProps) {
     return () => clearInterval(interval);
   }, [title, excerpt, lastSaved, autoSaving]);
 
-  // ------- NEW: save on window close -------
+
 useEffect(() => {
   const handleBeforeUnload = (e: BeforeUnloadEvent) => {
     const contentHtml = editorRef.current?.innerHTML ?? "";
@@ -137,20 +136,19 @@ useEffect(() => {
   return () => window.removeEventListener("beforeunload", handleBeforeUnload);
 }, [title, excerpt, lastSaved]);
 
-  /* ---------------- toolbar helpers ---------------- */
+  /*  toolbar helpers */
 
-  // normal execCommand helpers for bold / italic
+  
   function applyCommand(cmd: string, value?: string) {
     if (typeof window === "undefined") return;
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
 
     document.execCommand(cmd, false, value ?? "");
-    // Refocus the editor after command
+   
     editorRef.current?.focus();
   }
 
-  // Toggle block size: normal paragraph <p> ↔ heading <h2>
   function toggleHeading() {
     if (typeof window === "undefined") return;
 
@@ -172,7 +170,7 @@ useEffect(() => {
     editorRef.current?.focus();
   }
 
-  // NEW: toggle blockquote for the " icon
+  
   function toggleBlockQuote() {
     if (typeof window === "undefined") return;
 
@@ -187,17 +185,17 @@ useEffect(() => {
     const inBlockquote = element?.closest("blockquote");
 
     if (inBlockquote) {
-      // turn back into normal paragraph
+    
       document.execCommand("formatBlock", false, "p");
     } else {
-      // make it a blockquote (slant line + italic via CSS)
+     
       document.execCommand("formatBlock", false, "blockquote");
     }
     
     editorRef.current?.focus();
   }
 
-  // Generic toggle for inline <span class="...">
+ 
   function toggleInlineSpan(className: string) {
     if (typeof window === "undefined") return;
 
@@ -216,7 +214,7 @@ useEffect(() => {
     const existingSpan = element?.closest("span." + className) as HTMLSpanElement | null;
 
     if (existingSpan) {
-      // unwrap: replace the span with its children
+   
       const parent = existingSpan.parentNode;
       if (!parent) return;
       while (existingSpan.firstChild) {
@@ -227,19 +225,19 @@ useEffect(() => {
       return;
     }
 
-    // wrap selection in span
+   
     const span = document.createElement("span");
     span.className = className;
     try {
       range.surroundContents(span);
     } catch {
-      // if surroundContents fails (partial selection etc.), just skip gracefully
+    
     }
     
     editorRef.current?.focus();
   }
 
-  /* ---------------- link handling ---------------- */
+  /* ink handling  */
 
   function openLinkDialog() {
     if (typeof window === "undefined") return;
@@ -256,7 +254,7 @@ useEffect(() => {
       return;
     }
 
-    // save the range so we can restore it after user types in the dialog
+   
     savedRangeRef.current = range.cloneRange();
 
     const selectedText = range.toString();
@@ -275,12 +273,12 @@ useEffect(() => {
   const node = range.commonAncestorContainer;
   const element = node instanceof HTMLElement ? node : node.parentElement;
   
-  // Handle Backspace in blockquote
+ 
   if (e.key === "Backspace") {
     const blockquote = element?.closest("blockquote");
     
     if (blockquote) {
-      // Check if cursor is at the start and blockquote is empty or nearly empty
+
       const text = blockquote.textContent?.trim() || "";
       const cursorAtStart = range.startOffset === 0;
       
@@ -310,13 +308,13 @@ useEffect(() => {
       return;
     }
 
-    // Focus the editor first
+  
     editorRef.current?.focus();
 
     const sel = window.getSelection();
     if (!sel) return;
 
-    // Restore the saved selection
+   
     sel.removeAllRanges();
     sel.addRange(savedRangeRef.current);
 
@@ -347,13 +345,13 @@ useEffect(() => {
       console.error("Error inserting link:", err);
     }
 
-    // cleanup dialog
+   
     savedRangeRef.current = null;
     setShowLinkDialog(false);
     setLinkText("");
     setLinkUrl("");
     
-    // Refocus editor
+
     setTimeout(() => {
       editorRef.current?.focus();
     }, 100);
@@ -367,7 +365,7 @@ useEffect(() => {
     editorRef.current?.focus();
   }
 
-  /* ---------------- publish / update / draft ---------------- */
+  /* publish / update / draft */
 
   async function handleSave(isPublished: boolean) {
     if (isSaving) return;
@@ -382,7 +380,7 @@ useEffect(() => {
     setIsSaving(true);
 
     try {
-      // If we have a postId, UPDATE the post; otherwise CREATE new
+      
       if (props.postId) {
         const res = await fetch(`/api/posts/${props.postId}`, {
           method: "PUT",
@@ -455,7 +453,7 @@ useEffect(() => {
     await handleSave(false);
   }
 
-  /* ---------------- render ---------------- */
+  /* render  */
 
   return (
     <div className="editor-container" style={{ minHeight: "100vh", background: "#fff" }}>
@@ -494,16 +492,16 @@ useEffect(() => {
     <button
       type="button"
         onClick={async () => {
-    await autoSaveDraft();      // <— ensure draft save
-    router.push("/home");       // then go back
+    await autoSaveDraft();      
+    router.push("/home");      
   }}
       style={{
         marginTop: "4px",
         border: "none",
         background: "transparent",
         cursor: "pointer",
-         color: "#000",        // solid black
-    fontSize: "1.1rem",   // slightly bigger
+         color: "#000",        
+    fontSize: "1.1rem",  
     fontWeight: 700,   
         alignSelf: "flex-start",
       }}
@@ -512,16 +510,16 @@ useEffect(() => {
     </button>
   </div>
 
-  {/* RIGHT: keep your existing buttons block here unchanged */}
+
   <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-    {/* Save as Draft + Publish buttons as you already have */}
+
   </div>
 
 
           
           {/* Buttons Container */}
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            {/* Save as Draft Button - Light Yellow */}
+            {/* Save as Draft Button */}
             <button
               type="button"
               onClick={handleDraft}
@@ -531,7 +529,7 @@ useEffect(() => {
               Save as Draft
             </button>
             
-            {/* Publish Button - Light Green */}
+            {/* Publish Button */}
             <button
               type="submit"
               disabled={isSaving}
@@ -542,10 +540,10 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* Content area with top padding for fixed header */}
+     
         <div style={{ paddingTop: "80px" }}>
-          {/* title + excerpt inputs */}
-                {/* title + excerpt inputs */}
+      
+       
           <div style={{ marginBottom: "2rem" }}>
             <input
               type="text"
@@ -582,7 +580,7 @@ useEffect(() => {
           </div>
 
 
-          {/* main content editor */}
+     
                     {/* main content editor */}
         <div
   ref={editorRef}
@@ -604,9 +602,7 @@ useEffect(() => {
         </div>
       </form>
 
-      {/* Fixed COMPACT formatting toolbar at BOTTOM - GREY BACKGROUND */}
-           {/* Fixed COMPACT formatting toolbar at BOTTOM - MUCH SMALLER */}
-           {/* SUPER COMPACT toolbar at bottom */}
+  
       <div
         style={{
           position: "fixed",
@@ -818,7 +814,7 @@ useEffect(() => {
         </div>
       )}
 
-      {/* styles */}
+ 
            {/* styles */}
       <style jsx global>{`
         blockquote {

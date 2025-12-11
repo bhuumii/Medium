@@ -1,4 +1,3 @@
-// components/PostBookmarkButton.tsx
 "use client";
 
 import { useState, MouseEvent } from "react";
@@ -54,7 +53,7 @@ export default function PostBookmarkButton({
         saving ? "opacity-60 cursor-default" : ""
       }`}
     >
-      {/* same bookmark icon style as PostCard */}
+     
       <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
         <path
           d="M6 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v17l-7-4-7 4V4z"

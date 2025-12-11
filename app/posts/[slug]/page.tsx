@@ -1,4 +1,3 @@
-// app/posts/[slug]/page.tsx
 import { prisma } from "../../../lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -10,7 +9,7 @@ import PostBookmarkButton from "../../../components/PostBookmarkButton";
 import DeletePostButtonInline from "../../../components/DeletePostButtonInline";
 import PublishPostButton from "../../../components/PublishPostButton";
 import EditPostButton from "../../../components/EditPostButton";
-import LikeButton from "../../../components/LikeButton";  // ✅ ADD THIS
+import LikeButton from "../../../components/LikeButton";  
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -52,10 +51,10 @@ export default async function PostPage({ params }: Props) {
     include: { 
       author: true,
       _count: {
-        select: { likes: true }  // ✅ Count total likes
+        select: { likes: true }  
       },
       likes: session?.user?.id ? {
-        where: { userId: session.user.id },  // ✅ Check if current user liked it
+        where: { userId: session.user.id },  
         select: { id: true }
       } : false
     },
@@ -63,7 +62,7 @@ export default async function PostPage({ params }: Props) {
 
   if (!post) return notFound();
 
-  // Check if current user is the author
+ 
   const isAuthor = session?.user?.email === post.author?.email;
 
   // Check if saved
@@ -79,16 +78,16 @@ export default async function PostPage({ params }: Props) {
     initialIsSaved = !!bookmark;
   }
 
-  // ✅ Like data
+  // Like data
   const isLiked = post.likes && Array.isArray(post.likes) ? post.likes.length > 0 : false;
   const likeCount = post._count.likes;
 
   const authorName = post.author?.name ?? "Unknown";
 
-  // Dynamic Avatar Initial
+  //  Avatar Initial
   const initial = authorName.charAt(0).toUpperCase();
 
-  const date = formatDate(post.createdAt);
+  const date = formatDate(post.publishedAt ?? post.createdAt);
 
   // Read Time Calculation
   const words = post.content.split(/\s+/).length;
@@ -103,7 +102,7 @@ export default async function PostPage({ params }: Props) {
               {/* --- HEADER --- */}
         <header className="flex flex-col" style={{ marginBottom: '2rem' }}>
 
-          {/* Author Actions - Only for author */}
+          {/* Author Actions */}
           {isAuthor && (
             <div style={{ 
               display: 'flex', 
@@ -132,7 +131,7 @@ export default async function PostPage({ params }: Props) {
             </div>
           )}
 
-          {/* TITLE - 43px */}
+          {/* TITLE */}
           <h1 
             style={{ 
               fontFamily: "Charter, Georgia, 'Times New Roman', serif",
@@ -175,7 +174,7 @@ export default async function PostPage({ params }: Props) {
             {/* Left: Avatar + Info */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               
-              {/* Avatar: 44px */}
+              {/* Avatar */}
               <div
                 style={{
                   width: '44px',
@@ -212,7 +211,7 @@ export default async function PostPage({ params }: Props) {
               </div>
             </div>
 
-            {/* ✅ Right: Like + Bookmark Buttons */}
+            {/* Right: Like + Bookmark Buttons */}
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 

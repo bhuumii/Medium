@@ -1,4 +1,3 @@
-// components/AppShell.tsx
 "use client";
 
 import { useState, type ReactNode } from "react";
@@ -10,13 +9,13 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="app-root">
-      {/* Top Medium-like header */}
+ 
       <Header
         sidebarOpen={sidebarOpen}
         onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
       />
 
-      {/* Main area: sidebar + content */}
+      {/* Main area */}
       <main className="app-main">
         <Sidebar open={sidebarOpen} />
         <div className="app-content">{children}</div>

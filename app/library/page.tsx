@@ -1,4 +1,3 @@
-// app/library/page.tsx
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/authOptions";
@@ -85,15 +84,15 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
   const savedPostIds = new Set(savedRows.map((row) => row.postId));
 
   return (
-    // 1. UPDATED: Expanded width to 1200px and added horizontal padding
+
     <main 
       className="home-layout w-full mx-auto px-6" 
       style={{ maxWidth: '1200px' }}
     >
-      {/* Reduced top padding slightly to match Home page style */}
+    
       <section className="feed-header" style={{ paddingTop: "10px" }}>
         
-        {/* 2. UPDATED: Changed to text-left to align with the wider grid, removed massive bottom margin */}
+       
         <h1
           className="text-[42px] font-bold text-[#242424] tracking-tight leading-tight mb-8 text-left"
           style={{ marginTop: 0 }}
@@ -101,7 +100,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
           Library
         </h1>
 
-        {/* 3. UPDATED: Added flex, gap, and increased font size to 18px */}
+       
         <div className="feed-tabs flex gap-8 border-b border-[#f2f2f2] mb-8">
           <a
             className={

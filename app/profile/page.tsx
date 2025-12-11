@@ -1,4 +1,3 @@
-// app/profile/page.tsx
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/authOptions";
@@ -27,7 +26,6 @@ export default async function ProfileRoute() {
     redirect("/login");
   }
 
-  // Count published posts separately
   const publishedPostsCount = await prisma.post.count({
     where: {
       authorId: user.id,

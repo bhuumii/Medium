@@ -1,4 +1,3 @@
-// app/api/auth/[...nextauth]/authOptions.ts
 import type { NextAuthOptions } from "next-auth"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import GoogleProvider from "next-auth/providers/google"
@@ -15,13 +14,13 @@ export const authOptions: NextAuthOptions = {
   },
 
   providers: [
-    // ---- Google OAuth ----
+    // Google OAuth
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
 
-    // ---- Email + password ----
+    // Email + password
     CredentialsProvider({
       name: "credentials",
       credentials: {
@@ -37,7 +36,7 @@ export const authOptions: NextAuthOptions = {
           where: { email: credentials.email },
         })
 
-        // no user, or this user only has Google login (no password stored)
+       
         if (!user || !user.password) {
           return null
         }
@@ -51,7 +50,7 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        // NextAuth only needs these basic fields
+    
         return {
           id: user.id,
           name: user.name,
@@ -63,7 +62,7 @@ export const authOptions: NextAuthOptions = {
   ],
 
   callbacks: {
-    // put user.id into the JWT
+ 
     async jwt({ token, user }) {
       if (user) {
         token.id = (user as any).id
@@ -71,7 +70,6 @@ export const authOptions: NextAuthOptions = {
       return token
     },
 
-    // expose id on session.user.id so we can use it in the app
     async session({ session, token }) {
       if (session.user && token.id) {
         ;(session.user as any).id = token.id as string
@@ -80,6 +78,6 @@ export const authOptions: NextAuthOptions = {
     },
   },
 
-  // (optional but recommended if NEXTAUTH_SECRET is set)
+ 
   secret: process.env.NEXTAUTH_SECRET,
 }

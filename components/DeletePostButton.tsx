@@ -1,4 +1,3 @@
-// components/DeletePostButton.tsx
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -41,7 +40,6 @@ export default function DeletePostButton({
         return;
       }
 
-      // Success - redirect
       router.push(redirectTo);
       router.refresh();
     } catch (error) {
@@ -52,8 +50,7 @@ export default function DeletePostButton({
   }
 
   if (variant === "icon") {
-    // EXACT MATCH to Edit button styling - NO title attribute
-    // Updated className to include border-none, outline-none, and bg-transparent
+
     return (
       <button
         onClick={handleDelete}
@@ -84,7 +81,7 @@ export default function DeletePostButton({
     );
   }
 
-  // Clean minimal button for article page
+
   return (
     <button
       onClick={handleDelete}

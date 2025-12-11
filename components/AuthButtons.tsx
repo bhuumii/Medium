@@ -8,7 +8,7 @@ export default function AuthButtons() {
 
   if (status === 'loading') return null
 
-  // LOGGED IN → show Write + avatar
+ 
   if (session) {
     const initial = session.user?.name?.[0]?.toUpperCase() ?? 'U'
 
@@ -28,7 +28,7 @@ export default function AuthButtons() {
           Sign out
         </button>
 
-        {/* simple circle avatar linking to /profile */}
+   
         <Link
           href="/profile"
           className="flex h-8 w-8 items-center justify-center rounded-full bg-black text-white text-sm"
@@ -40,7 +40,7 @@ export default function AuthButtons() {
     )
   }
 
-  // LOGGED OUT → show Sign in + Get started (landing page design)
+
   return (
     <div className="flex items-center gap-3 text-sm">
       <button

@@ -1,4 +1,3 @@
-// app/stories/page.tsx
 import { prisma } from "../../lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/authOptions";
@@ -26,7 +25,6 @@ export default async function StoriesPage({ searchParams }: StoriesPageProps) {
     orderBy: { createdAt: "desc" },
   });
 
-  // Separate drafts vs published based on isPublished field
   const drafts = posts.filter(post => !post.isPublished);
   const published = posts.filter(post => post.isPublished);
 
@@ -34,15 +32,15 @@ export default async function StoriesPage({ searchParams }: StoriesPageProps) {
   const activeList = activeTab === "drafts" ? drafts : published;
 
   return (
-    // 1. UPDATED: Added 'home-layout' and matched max-width/padding to Library page
+   
     <main 
       className="home-layout w-full mx-auto px-6" 
       style={{ maxWidth: '1200px' }}
     >
-      {/* 2. UPDATED: Matched paddingTop (10px) to Library header */}
+     
       <section className="feed-header" style={{ paddingTop: "10px" }}>
         
-        {/* Title: Matches Library typography and spacing */}
+      
         <h1 
           className="text-[42px] font-bold text-[#242424] tracking-tight leading-tight mb-8 text-left" 
           style={{ marginTop: 0 }}
@@ -50,7 +48,7 @@ export default async function StoriesPage({ searchParams }: StoriesPageProps) {
           Stories
         </h1>
 
-        {/* 3. UPDATED: Tabs container - Flex, gap-8, and bottom border like Library */}
+       
         <div className="feed-tabs flex gap-8 border-b border-[#f2f2f2] mb-8">
           
           {/* Drafts Tab */}

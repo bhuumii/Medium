@@ -1,4 +1,3 @@
-// app/home/page.tsx
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/authOptions";
@@ -61,19 +60,18 @@ export default async function HomeSignedIn({ searchParams }: HomePageProps) {
   );
 
   return (
-    // 1. UPDATED: Matched Library layout (maxWidth 1200px, w-full, px-6)
+
     <main 
       className="home-layout w-full mx-auto px-6"
       style={{ maxWidth: '1200px' }} 
     >
-      
-      {/* 2. UPDATED: Matched Library top padding (10px) */}
+ 
       <section className="feed-header" style={{ paddingTop: "10px" }}>
         
-        {/* Welcome Message */}
+     
         <div className="w-full text-left" style={{ marginBottom: "2rem" }}>
           
-          {/* 3. UPDATED: Increased font to 42px to match Library "Library" title */}
+        
           <h1 
             className="text-[42px] font-bold text-[#242424] tracking-tight leading-tight"
             style={{ marginTop: 0 }}
@@ -85,7 +83,7 @@ export default async function HomeSignedIn({ searchParams }: HomePageProps) {
           </p>
         </div>
 
-        {/* Tabs - Kept consistent with other pages (18px) */}
+      
         <div className="feed-tabs flex gap-8 border-b border-[#f2f2f2] mb-8">
           <a
             className={
@@ -110,7 +108,7 @@ export default async function HomeSignedIn({ searchParams }: HomePageProps) {
         </div>
       </section>
 
-      {/* Feed List */}
+   
       <section className="feed-list">
       {posts.map((post) => {
   const words = post.content.split(/\s+/).length;

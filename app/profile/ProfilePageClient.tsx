@@ -1,4 +1,3 @@
-// app/profile/ProfilePageClient.tsx
 "use client";
 
 import { useState, FormEvent } from "react";
@@ -30,11 +29,10 @@ export default function ProfilePageClient({ user }: ProfilePageClientProps) {
   }
 
   return (
-    // 1. Added 'home-layout' class to match Library page spacing
-    // 2. Kept maxWidth 1200px and w-full/px-6 for the wide layout
+  
     <div className="home-layout w-full mx-auto px-6" style={{ maxWidth: '1200px' }}>
       
-      {/* 3. Replicated 'feed-header' with paddingTop: '10px' to match Library exactly */}
+    
       <div className="feed-header" style={{ paddingTop: "10px", paddingBottom: 0 }}>
         <h1
           className="text-[42px] font-bold text-[#242424] tracking-tight leading-tight mb-8 text-left"
@@ -53,7 +51,7 @@ export default function ProfilePageClient({ user }: ProfilePageClientProps) {
   );
 }
 
-/* ---------- About summary view ---------- */
+/* About summary view */
 
 function AboutSummary({
   user,
@@ -83,7 +81,7 @@ function AboutSummary({
             fontSize: "2.5rem",
             color: "white",
             fontWeight: 600,
-            flexShrink: 0 // Prevent avatar from squishing
+            flexShrink: 0 
           }}
         >
           {initial}
@@ -124,7 +122,7 @@ function AboutSummary({
         Edit profile
       </button>
 
-      {/* Published Articles Card - Clickable - Single Centered */}
+      {/* Published Articles Card  */}
       <Link
         href="/stories?tab=published"
         style={{
@@ -179,7 +177,7 @@ function AboutSummary({
   );
 }
 
-/* ---------- Edit profile form ---------- */
+/* Edit profile form  */
 
 function EditProfileForm({
   user,
@@ -220,7 +218,7 @@ function EditProfileForm({
 
       setStatus("saved");
       
-      // Refresh the page data
+    
       router.refresh();
       
       setTimeout(() => {
@@ -238,7 +236,7 @@ function EditProfileForm({
         Edit Profile
       </h2>
 
-      {/* Email (Read-only) */}
+      {/* Email */}
       <label style={{ display: "block", marginBottom: "1.5rem" }}>
         <div style={{ marginBottom: "0.5rem", fontWeight: 500, color: "#374151" }}>
           Email

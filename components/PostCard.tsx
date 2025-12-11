@@ -1,4 +1,3 @@
-// components/PostCard.tsx
 "use client";
 
 import Link from "next/link";
@@ -19,7 +18,7 @@ type PostCardProps = {
     } | null;
     isLiked: boolean;
     likeCount: number;
-    readTime: string;  // ✅ ADD THIS
+    readTime: string;  
   };
   initialIsSaved: boolean;
 };
@@ -27,7 +26,7 @@ type PostCardProps = {
 export default function PostCard({ post, initialIsSaved }: PostCardProps) {
   const authorName = post.author?.name ?? "Unknown";
   const date = formatDate(post.createdAt);
-  const readTime = post.readTime;  // ✅ USE FROM PROP
+  const readTime = post.readTime; 
 
   const [isSaved, setIsSaved] = useState<boolean>(initialIsSaved);
   const [saving, setSaving] = useState(false);

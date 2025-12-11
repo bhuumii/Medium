@@ -1,4 +1,3 @@
-// app/api/posts/[id]/route.ts
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../../lib/prisma';
 import { getServerSession } from 'next-auth/next';
@@ -22,7 +21,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
-    // Find the post and verify ownership
+ 
     const existingPost = await prisma.post.findUnique({
       where: { id },
       include: { author: true },
@@ -39,7 +38,7 @@ export async function PUT(
       );
     }
 
-    // Build update data object - only update provided fields
+ 
     const updateData: any = {};
     
     if (body.title !== undefined) {
@@ -54,7 +53,7 @@ export async function PUT(
     
     if (body.isPublished !== undefined) {
       updateData.isPublished = body.isPublished;
-      // Set publishedAt only when publishing for the first time
+   
       if (body.isPublished && !existingPost.isPublished) {
         updateData.publishedAt = new Date();
       }
@@ -77,7 +76,7 @@ export async function PUT(
 }
 
 
-// NEW: DELETE handler
+// DELETE handler
 export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -91,7 +90,7 @@ export async function DELETE(
 
     const { id } = await params;
 
-    // Find the post and verify ownership
+    
     const existingPost = await prisma.post.findUnique({
       where: { id },
       include: { author: true },
@@ -108,7 +107,7 @@ export async function DELETE(
       );
     }
 
-    // Delete the post (bookmarks will be cascade deleted due to schema)
+    // Delete the post 
     await prisma.post.delete({
       where: { id },
     });

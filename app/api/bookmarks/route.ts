@@ -1,4 +1,3 @@
-// app/api/bookmarks/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/authOptions";
@@ -26,7 +25,7 @@ export async function POST(req: Request) {
 
     const userId = session.user.id;
 
-    // Because Bookmark has @@unique([userId, postId])
+ 
     const existing = await prisma.bookmark.findUnique({
       where: {
         userId_postId: {
@@ -37,7 +36,7 @@ export async function POST(req: Request) {
     });
 
     if (existing) {
-      // UNSAVE – delete the bookmark
+    
       await prisma.bookmark.delete({
         where: { id: existing.id },
       });
@@ -45,7 +44,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ saved: false }, { status: 200 });
     }
 
-    // SAVE – create a new bookmark
+ 
     await prisma.bookmark.create({
       data: {
         userId,

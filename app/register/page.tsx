@@ -1,4 +1,3 @@
-// app/register/page.tsx
 'use client';
 
 import { useEffect } from 'react';
@@ -8,7 +7,7 @@ export default function RegisterPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to home page where modal will handle signup
+   
     router.replace('/?signup=true');
   }, [router]);
 

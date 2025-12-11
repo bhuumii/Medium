@@ -1,4 +1,3 @@
-// app/page.tsx
 "use client";
 
 import Link from "next/link";
@@ -105,7 +104,7 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Right Side - Clean empty space */}
+        {/* Right Side  */}
         <div style={{ flex: 1 }} />
       </div>
 

@@ -1,4 +1,3 @@
-// components/profile/ProfileHome.tsx
 "use client";
 
 type UserForProfileHome = {
@@ -10,7 +9,7 @@ export default function ProfileHome({ user }: { user: UserForProfileHome }) {
 
   return (
     <section>
-      {/* Reading list card, similar to Medium */}
+  
       <div className="border border-neutral-200 rounded-md overflow-hidden">
         {/* Header with avatar + name */}
         <div className="flex items-center gap-2 px-4 py-3 text-sm text-neutral-700 border-b border-neutral-100">
